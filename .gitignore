@@ -1,0 +1,15 @@
+# Виртуальное окружение
+venv/
+
+# База данных
+instance/
+
+# Python кэш
+__pycache__/
+*.pyc
+
+# VS Code
+.vscode/
+
+# Секреты
+.env
