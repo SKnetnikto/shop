@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Каталог — Шиповник{% endblock %}
+
+{% block content %}
+
+<!-- ====================== HERO КАТАЛОГА ====================== -->
+<section class="catalog-hero">
+    <div class="container">
+        <h1 class="catalog-hero__title">Каталог</h1>
+        <p class="catalog-hero__subtitle">Более 500 моделей с любовью для тебя ♡</p>
+    </div>
+</section>
+
+<!-- ====================== ФИЛЬТРЫ И СЕТКА ====================== -->
+<section class="catalog">
+    <div class="container">
+        <div class="catalog__inner">
+
+            <!-- Боковая панель с категориями (на мобильных — сверху) -->
+            <aside class="sidebar">
+                <h3 class="sidebar__title">Категории</h3>
+                <ul class="category-list">
+                    <!-- Все категории из базы -->
+                    {% for cat in categories %}
+                    <li class="category-item">
+                        <a href="{{ url_for('catalog') }}?category={{ cat.slug }}"
+                           class="category-link {% if request.args.get('category') == cat.slug %}active{% endif %}">
+                            <span class="category-icon">{{ cat.icon }}</span>
+                            {{ cat.name }}
+                            <span class="category-count">({{ cat.products|length }})</span>
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                <!-- Быстрые фильтры -->
+                <div class="quick-filters">
+                    <a href="{{ url_for('catalog') }}?new=true" class="quick-filter {% if request.args.get('new') %}active{% endif %}">
+                        Новинки
+                    </a>
+                    <a href="{{ url_for('catalog') }}?sale=true" class="quick-filter {% if request.args.get('sale') %}active{% endif %}">
+                        Распродажа
+                    </a>
+                </div>
+            </aside>
+
+            <!-- Сетка товаров -->
+            <div class="products-grid">
+                {% if products|length == 0 %}
+                    <p class="no-products">Товаров пока нет. Но скоро будут! ♡</p>
+                {% else %}
+                    {% for product in products %}
+                    <article class="product-card">
+                        <div class="product-card__image">
+                            <img src="{{ url_for('static', filename='images/products/' + product.image) }}"
+                                 alt="{{ product.title }}"
+                                 onerror="this.src='{{ url_for('static', filename='images/placeholder.jpg') }}'">
+                            {% if product.is_new %}
+                                <span class="badge badge--new">Новинка</span>
+                            {% endif %}
+                            {% if product.is_sale and product.discount_percent > 0 %}
+                                <span class="badge badge--sale">-{{ product.discount_percent }}%</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="product-card__info">
+                            <h3 class="product-card__title">{{ product.title }}</h3>
+                            <div class="product-card__price">
+                                <span class="price-current">{{ product.price }} ₽</span>
+                                {% if product.old_price %}
+                                    <span class="price-old">{{ product.old_price }} ₽</span>
+                                {% endif %}
+                            </div>
+                            <a href="#" class="btn btn--small">Подробнее</a>
+                        </div>
+                    </article>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

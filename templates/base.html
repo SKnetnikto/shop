@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Шиповник — стильная одежда{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header class="header">
+    <div class="container header__inner">
+        <a href="/" class="logo">Шиповник</a>
+        <nav class="nav">
+            <ul class="nav__list">
+                <li><a href="/">Главная</a></li>
+                <li class="nav__dropdown">
+                    <a href="#">Каталог</a>
+                    <div class="dropdown">
+                        <a href="#">👗 Женское</a>
+                        <a href="#">👔 Мужское</a>
+                        <a href="#">👶 Детское</a>
+                        <a href="#">👜 Аксессуары</a>
+                        <a href="#">🔥 Распродажа</a>
+                    </div>
+                </li>
+                <li><a href="/about">О нас</a></li>
+                <li><a href="/cart" class="cart">Корзина <span class="cart-badge">0</span></a></li>
+            </ul>
+        </nav>
+        <div class="burger">
+            <span></span><span></span><span></span>
+        </div>
+    </div>
+</header>
+
+<main class="main">
+    {% block content %}{% endblock %}
+</main>
+
+<!-- КРАСИВЫЙ ПОДВАЛ -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer__grid">
+            <div>
+                <h4>Шиповник</h4>
+                <p>Самая красивая одежда<br>с доставкой за 2–3 дня ♡</p>
+            </div>
+            <div>
+                <h4>Каталог</h4>
+                <a href="#">Новинки</a>
+                <a href="#">Платья</a>
+                <a href="#">Верх</a>
+                <a href="#">Низ</a>
+            </div>
+            <div>
+                <h4>Помощь</h4>
+                <a href="#">Доставка</a>
+                <a href="#">Возврат</a>
+                <a href="#">Размеры</a>
+                <a href="#">FAQ</a>
+            </div>
+            <div>
+                <h4>Контакты</h4>
+                <p>+7 (999) 999-99-99<br>hello@shipovnik.ru</p>
+            </div>
+        </div>
+        <div class="footer__bottom">
+            © 2025 Шиповник — одежда с характером
+        </div>
+    </div>
+</footer>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

@@ -1,15 +1,26 @@
 # Виртуальное окружение
 venv/
+env/
+.venv/
 
 # База данных
 instance/
+*.db
 
-# Python кэш
+# Кэши Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
 # VS Code
 .vscode/
+*.code-workspace
 
-# Секреты
+# Логи и временные файлы
+*.log
+.DS_Store
+Thumbs.db
+
+# Секреты (на всякий случай)
 .env
