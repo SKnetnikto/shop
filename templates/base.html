@@ -19,6 +19,13 @@
         <nav class="nav">
             <ul class="nav__list">
                 <li><a href="{{ url_for('index') }}">Главная</a></li>
+                <!-- Поиск по товарам -->
+                <li>
+                    <form action="{{ url_for('search') }}" method="get" class="nav-search">
+                        <input type="search" name="q" placeholder="Поиск: название, тег, описание" value="{{ request.args.get('q','') }}" class="search-input" aria-label="Поиск по товарам">
+                        <button type="submit" class="search-btn" aria-label="Найти">🔍</button>
+                    </form>
+                </li>
 
                 <li class="nav__dropdown">
                     <a href="#">Каталог</a>
@@ -29,30 +36,32 @@
                     </div>
                 </li>
 
-                <li><a href="/about">О нас</a></li>
+                {% if not current_user.is_authenticated %}
+                    <!-- 'О нас' перемещено в футер -->
+                {% endif %}
                 <li>
                     <a href="/cart" class="cart">
                         Корзина <span class="cart-badge">0</span>
                     </a>
                 </li>
 
-                <!-- АДМИНСКИ АВТОРИЗАЦИИ -->
+                <!-- АДМИНСКИ / ВТОРОЙ СЛОТ (держим структуру) -->
                 {% if current_user.is_authenticated %}
                     <li><a href="/admin" class="admin-btn">Добавить товар</a></li>
-                    <li><a href="/admin/products" class="admin-btn">Все товары</a></li>
                     <li><a href="/logout" class="logout-btn">Выйти</a></li>
                 {% else %}
+                    <li><a href="{{ url_for('novelties') }}" class="nav-link">Новинки</a></li>
                     <li><a href="/login" class="login-btn">Войти</a></li>
                 {% endif %}
             </ul>
         </nav>
 
-        <!-- Переключатель тёмной темы -->
+        <!-- Переключатель тёмной темы (одна иконка) -->
         <div class="theme-toggle">
             <input type="checkbox" id="theme-switch" class="theme-switch-input">
-            <label for="theme-switch" class="theme-switch-label">
-                <span class="sun">Sun</span>
-                <span class="moon">Moon</span>
+            <label for="theme-switch" class="theme-icon" title="Переключить тему" aria-label="Переключить тему">
+                <!-- Иконка через pseudo-element в CSS -->
+                <span class="icon" aria-hidden="true"></span>
             </label>
         </div>
 
@@ -72,6 +81,7 @@
 <footer class="footer">
     <div class="container">
         <p>© 2025 Шиповник — одежда с душой ♡</p>
+        <p class="footer-links"><a href="/about">О нас</a></p>
     </div>
 </footer>
 

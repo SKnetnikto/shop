@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Редактировать товар — Админка{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <h1 class="admin-title">Редактировать товар</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash flash--{{ category }} flash--big">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="add-product-card">
+            <form method="POST" enctype="multipart/form-data" novalidate>
+                {{ form.hidden_tag() }}
+
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <img src="{{ url_for('static', filename='images/products/' + product.image) }}"
+                         alt="Текущее фото" style="max-width: 300px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                </div>
+
+                <!-- Та же форма, что и при добавлении -->
+                <div class="form-grid">
+                    <div class="form-group">
+                        {{ form.title.label(class="form-label-big") }}
+                        {{ form.title(class="form-input-big") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.price.label(class="form-label-big") }}
+                        {{ form.price(class="form-input-big") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.old_price.label(class="form-label-big") }}
+                        {{ form.old_price(class="form-input-big") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.category.label(class="form-label-big") }}
+                        {{ form.category(class="form-select-big") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.sku.label(class="form-label-big") }}
+                        {{ form.sku(class="form-input-big") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.brand.label(class="form-label-big") }}
+                        {{ form.brand(class="form-input-big") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.color.label(class="form-label-big") }}
+                        {{ form.color(class="form-input-big") }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.description.label(class="form-label-big") }}
+                    {{ form.description(class="form-textarea-big", rows="5") }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.tags.label(class="form-label-big") }}
+                    {{ form.tags(class="form-input-big") }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.image.label(class="form-label-big") }}
+                    {{ form.image(class="form-file-input") }}
+                    <div class="photo-hint">Оставьте пустым, если не хотите менять фото</div>
+                </div>
+
+                <div class="checkbox-group">
+                    <label class="checkbox-label">{{ form.is_new() }} {{ form.is_new.label }}</label>
+                    <label class="checkbox-label">{{ form.is_sale() }} {{ form.is_sale.label }}</label>
+                </div>
+
+                <div style="display: flex; gap: 20px; justify-content: center;">
+                    {{ form.submit(class="btn btn--full btn--big", value="Сохранить изменения") }}
+                    <a href="{{ url_for('admin_products') }}" class="btn btn--back btn--big">
+                        ← Назад к списку
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <div style="text-align: center; margin-top: 60px;">
+            <a href="{{ url_for('index') }}" class="btn btn--back btn--big">
+                ← На главную
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -6,8 +6,13 @@
 <!-- ====================== HERO КАТАЛОГА ====================== -->
 <section class="catalog-hero">
     <div class="container">
+        {% if novelties %}
+        <h1 class="catalog-hero__title">Новинки</h1>
+        <p class="catalog-hero__subtitle">Последние добавленные товары</p>
+        {% else %}
         <h1 class="catalog-hero__title">Каталог</h1>
         <p class="catalog-hero__subtitle">Более 500 моделей с любовью для тебя ♡</p>
+        {% endif %}
     </div>
 </section>
 
@@ -23,8 +28,9 @@
                     <!-- Все категории из базы -->
                     {% for cat in categories %}
                     <li class="category-item">
-                        <a href="{{ url_for('catalog') }}?category={{ cat.slug }}"
-                           class="category-link {% if request.args.get('category') == cat.slug %}active{% endif %}">
+                                {# Ссылка на категорию: сохраняем текущие быстрые фильтры (new, sale) #}
+                                <a href="{{ url_for('catalog') }}?category={{ cat.slug }}{% if request.args.get('new') %}&amp;new={{ request.args.get('new') }}{% endif %}{% if request.args.get('sale') %}&amp;sale={{ request.args.get('sale') }}{% endif %}"
+                                    class="category-link {% if request.args.get('category') == cat.slug %}active{% endif %}">
                             <span class="category-icon">{{ cat.icon }}</span>
                             {{ cat.name }}
                             <span class="category-count">({{ cat.products|length }})</span>
@@ -35,10 +41,14 @@
 
                 <!-- Быстрые фильтры -->
                 <div class="quick-filters">
-                    <a href="{{ url_for('catalog') }}?new=true" class="quick-filter {% if request.args.get('new') %}active{% endif %}">
+                    {# Ссылка фильтра 'new' сохраняет выбранную категорию, если есть #}
+                    <a href="{{ url_for('catalog') }}{% if request.args.get('category') %}?category={{ request.args.get('category') }}&amp;new=true{% else %}?new=true{% endif %}"
+                       class="quick-filter {% if request.args.get('new') %}active{% endif %}">
                         Новинки
                     </a>
-                    <a href="{{ url_for('catalog') }}?sale=true" class="quick-filter {% if request.args.get('sale') %}active{% endif %}">
+                    {# Ссылка фильтра 'sale' сохраняет выбранную категорию, если есть #}
+                    <a href="{{ url_for('catalog') }}{% if request.args.get('category') %}?category={{ request.args.get('category') }}&amp;sale=true{% else %}?sale=true{% endif %}"
+                       class="quick-filter {% if request.args.get('sale') %}active{% endif %}">
                         Распродажа
                     </a>
                 </div>
@@ -52,9 +62,10 @@
                     {% for product in products %}
                     <article class="product-card">
                         <div class="product-card__image">
-                            <img src="{{ url_for('static', filename='images/products/' + product.image) }}"
-                                 alt="{{ product.title }}"
-                                 onerror="this.src='{{ url_for('static', filename='images/placeholder.jpg') }}'">
+                               <img src="{{ url_for('static', filename='images/products/' + product.image) }}"
+                                   alt="{{ product.title }}"
+                                   data-placeholder="{{ url_for('static', filename='images/placeholder.png') }}"
+                                   onerror="this.src=this.dataset.placeholder">
                             {% if product.is_new %}
                                 <span class="badge badge--new">Новинка</span>
                             {% endif %}

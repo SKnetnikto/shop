@@ -62,10 +62,17 @@ class Product(db.Model):
     price = db.Column(db.Float, nullable=False)                 # цена в рублях
     old_price = db.Column(db.Float, nullable=True)              # старая цена (для скидок)
     description = db.Column(db.Text, nullable=True)             # описание
-    image = db.Column(db.String(100), default="placeholder.jpg") # имя файла картинки
+    image = db.Column(db.String(100), default="placeholder.png") # имя файла картинки
     in_stock = db.Column(db.Boolean, default=True)              # есть ли в наличии
     is_new = db.Column(db.Boolean, default=False)               # новинка?
     is_sale = db.Column(db.Boolean, default=False)              # на распродаже?
+
+    # Дополнительные поля для поиска и атрибутов (quick search)
+    tags = db.Column(db.String(200), default="")              # ключевые слова через запятую
+    brand = db.Column(db.String(80), nullable=True)
+    color = db.Column(db.String(50), nullable=True)
+    sku = db.Column(db.String(64), nullable=True)
+    search_text = db.Column(db.Text, nullable=True, index=True)  # объединённый текст для поиска
 
     # Внешний ключ — связь с категорией
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)

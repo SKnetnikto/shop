@@ -27,33 +27,83 @@
                         <div class="form-group">
                             {{ form.title.label(class="form-label-big") }}
                             {{ form.title(class="form-input-big", placeholder="Например: Платье летнее «Розовый закат»") }}
+                            {% if form.title.errors %}
+                                <div class="form-error">{{ form.title.errors[0] }}</div>
+                            {% endif %}
                         </div>
 
                         <div class="form-group">
                             {{ form.price.label(class="form-label-big") }}
                             {{ form.price(class="form-input-big", placeholder="1490") }}
+                            {% if form.price.errors %}
+                                <div class="form-error">{{ form.price.errors[0] }}</div>
+                            {% endif %}
                         </div>
 
                         <div class="form-group">
                             {{ form.old_price.label(class="form-label-big") }}
                             {{ form.old_price(class="form-input-big", placeholder="2990 — для скидки") }}
+                            {% if form.old_price.errors %}
+                                <div class="form-error">{{ form.old_price.errors[0] }}</div>
+                            {% endif %}
                         </div>
 
                         <div class="form-group">
                             {{ form.category.label(class="form-label-big") }}
                             {{ form.category(class="form-select-big") }}
+                            {% if form.category.errors %}
+                                <div class="form-error">{{ form.category.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form.sku.label(class="form-label-big") }}
+                            {{ form.sku(class="form-input-big", placeholder="Артикул (SKU)") }}
+                            {% if form.sku.errors %}
+                                <div class="form-error">{{ form.sku.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form.brand.label(class="form-label-big") }}
+                            {{ form.brand(class="form-input-big", placeholder="Бренд") }}
+                            {% if form.brand.errors %}
+                                <div class="form-error">{{ form.brand.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form.color.label(class="form-label-big") }}
+                            {{ form.color(class="form-input-big", placeholder="Цвет: Черный, Красный...") }}
+                            {% if form.color.errors %}
+                                <div class="form-error">{{ form.color.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form.tags.label(class="form-label-big") }}
+                            {{ form.tags(class="form-input-big", placeholder="тег1, тег2, тег3") }}
+                            {% if form.tags.errors %}
+                                <div class="form-error">{{ form.tags.errors[0] }}</div>
+                            {% endif %}
                         </div>
                     </div>
 
                     <div class="form-group">
                         {{ form.description.label(class="form-label-big") }}
                         {{ form.description(class="form-textarea-big", rows="4", placeholder="Опишите товар: состав, размеры, особенности...") }}
+                        {% if form.description.errors %}
+                            <div class="form-error">{{ form.description.errors[0] }}</div>
+                        {% endif %}
                     </div>
 
                     <!-- Загрузка фото с превью и подсказкой -->
                     <div class="form-group">
                         {{ form.image.label(class="form-label-big") }}
                         {{ form.image(class="form-file-input", accept="image/jpeg,image/png,image/webp") }}
+                        {% if form.image.errors %}
+                            <div class="form-error">{{ form.image.errors[0] }}</div>
+                        {% endif %}
                         
                         <div class="photo-hint">
                             <strong>Рекомендации по фото:</strong><br>
