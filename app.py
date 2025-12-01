@@ -5,10 +5,10 @@
 from flask import Flask, render_template, request
 import os
 
-# ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+
 # ВАЖНО: импортируем модели СРАЗУ, до создания приложения!
 from models import db, Category, Product
-# ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+
 
 # Создаём приложение
 app = Flask(__name__)
