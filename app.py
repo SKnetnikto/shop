@@ -134,6 +134,11 @@ def delete_product(product_id):
     db.session.commit()
     flash("Товар удалён", "info")
     return redirect("/admin")
+@app.route("/admin/products")
+@login_required
+def admin_products():
+    products = Product.query.order_by(Product.created_at.desc()).all()
+    return render_template("admin_products.html", products=products)
 
 
 

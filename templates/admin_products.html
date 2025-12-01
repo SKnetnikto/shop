@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Товары — Админка{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <h1 class="admin-title">Все товары ({{ products|length }})</h1>
+
+        <div style="text-align: center; margin-bottom: 40px;">
+            <a href="{{ url_for('admin_panel') }}" class="btn btn--big">
+                ← Добавить новый товар
+            </a>
+        </div>
+
+        {% if products %}
+            <div class="products-admin-grid">
+                {% for product in products %}
+                <div class="product-admin-card">
+                    <img src="{{ url_for('static', filename='images/products/' + product.image) }}" alt="{{ product.title }}">
+                    <div class="product-admin-info">
+                        <h3>{{ product.title }}</h3>
+                        <p><strong>{{ product.price }} ₽</strong> {% if product.old_price %}<del>{{ product.old_price }} ₽</del>{% endif %}</p>
+                        <p>{{ product.category.name }} • {{ 'Новинка' if product.is_new else '' }} {{ 'Sale' if product.is_sale else '' }}</p>
+                    </div>
+                    <div class="product-admin-actions">
+                        <form method="POST" action="{{ url_for('delete_product', product_id=product.id) }}" 
+                              onsubmit="return confirm('Удалить «{{ product.title }}»?')">
+                            <button type="submit" class="btn-delete">Удалить</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="empty-state">Товаров пока нет. <a href="{{ url_for('admin_panel') }}">Добавьте первый!</a></p>
+        {% endif %}
+
+        <div style="text-align: center; margin-top: 60px;">
+            <a href="{{ url_for('index') }}" class="btn btn--back btn--big">
+                ← На главную
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
