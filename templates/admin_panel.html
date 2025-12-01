@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Админка — Шиповник{% endblock %}
+
+{% block content %}
+<!-- ===================== АДМИНСКАЯ ПАНЕЛЬ ===================== -->
+<section class="admin-section">
+    <div class="container">
+        <h1 class="admin-title">Привет, босс! Добавь товар</h1>
+
+        <!-- Сообщения -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash flash--{{ category }} flash--admin">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Форма добавления товара -->
+        <div class="admin-grid">
+            <div class="add-product-card">
+                <h2>Новый товар</h2>
+                <form method="POST" enctype="multipart/form-data" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            {{ form.title.label }}
+                            {{ form.title(class="form-input") }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form.price.label }}
+                            {{ form.price(class="form-input", placeholder="1490") }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form.old_price.label }}
+                            {{ form.old_price(class="form-input", placeholder="2990") }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form.category.label }}
+                            {{ form.category(class="form-select") }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        {{ form.description.label }}
+                        {{ form.description(class="form-textarea", rows="4") }}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form.image.label }}
+                        {{ form.image(class="form-file") }}
+                        <div id="image-preview" class="image-preview"></div>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <label>{{ form.is_new() }} {{ form.is_new.label }}</label>
+                        <label>{{ form.is_sale() }} {{ form.is_sale.label }}</label>
+                    </div>
+
+                    {{ form.submit(class="btn btn--full") }}
+                </form>
+            </div>
+
+            <!-- ===================== КНОПКА НАЗАД В АДМИНКЕ ===================== -->
+            <div class="admin-actions" style="margin-top: 40px; text-align: center;">
+                <a href="{{ url_for('index') }}" class="btn btn--back">
+                    ← Вернуться на главную
+                </a>
+            </div>
+
+            <!-- Список существующих товаров -->
+            <div class="products-list">
+                <h2>Товары в каталоге ({{ products|length }})</h2>
+                {% if products %}
+                    {% for product in products %}
+                    <div class="product-item">
+                        <img src="{{ url_for('static', filename='images/products/' + product.image) }}" 
+                             alt="{{ product.title }}" onerror="this.src='/static/images/placeholder.jpg'">
+                        <div class="product-info">
+                            <strong>{{ product.title }}</strong>
+                            <p>{{ product.price }} ₽ {% if product.old_price %} 
+                                <del>{{ product.old_price }} ₽</del>{% endif %}</p>
+                            <span class="badge badge--small {% if product.is_new %}badge--new{% elif product.is_sale %}badge--sale{% endif %}">
+                                {% if product.is_new %}Новинка{% elif product.is_sale %}Sale{% endif %}
+                            </span>
+                        </div>
+                        <form method="POST" action="{{ url_for('delete_product', product_id=product.id) }}" 
+                              onsubmit="return confirm('Уверен?')">
+                            <button type="submit" class="btn-delete">Удалить</button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p>Пока пусто... Добавь первый товар!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

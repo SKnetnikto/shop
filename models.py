@@ -4,6 +4,8 @@
 
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # Создаём объект БД. Подключим его в app.py чуть позже
 db = SQLAlchemy()
@@ -26,6 +28,27 @@ class Category(db.Model):
 
     def __repr__(self):
         return f"<Category {self.name}>"
+
+
+
+class Admin(UserMixin, db.Model):
+    """
+    Модель администратора — только один пользователь
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
+
+    def set_password(self, password):
+        """Хешируем пароль при создании/смене"""
+        self.password_hash = generate_password_hash(password, method='scrypt')
+
+    def check_password(self, password):
+        """Проверяем пароль при входе"""
+        return check_password_hash(self.password_hash, password)
+
+    def __repr__(self):
+        return f"<Admin {self.username} >"
 
 
 class Product(db.Model):

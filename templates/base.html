@@ -4,75 +4,86 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Шиповник — стильная одежда{% endblock %}</title>
+
+    <!-- Подключаем наш главный CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Шрифт Inter (как в новом дизайне) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+                // Чинит стрелку "назад" в браузере — теперь не будет вылетать приложение
+            // Работает на всех страницах, где есть этот скрипт
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+            window.location.reload();
+       }
+});
+</script>
 </head>
 <body>
 
+<!-- ===================== ШАПКА САЙТА ===================== -->
 <header class="header">
     <div class="container header__inner">
-        <a href="/" class="logo">Шиповник</a>
+        <!-- Логотип -->
+        <a href="{{ url_for('index') }}" class="logo">Шиповник</a>
+
+        <!-- Основное меню -->
         <nav class="nav">
             <ul class="nav__list">
-                <li><a href="/">Главная</a></li>
+                <li><a href="{{ url_for('index') }}">Главная</a></li>
+
+                <!-- Выпадающее меню Каталог -->
                 <li class="nav__dropdown">
                     <a href="#">Каталог</a>
                     <div class="dropdown">
-                        <a href="#">👗 Женское</a>
-                        <a href="#">👔 Мужское</a>
-                        <a href="#">👶 Детское</a>
-                        <a href="#">👜 Аксессуары</a>
-                        <a href="#">🔥 Распродажа</a>
+                        {% for cat in categories %}
+                            <a href="/catalog?category={{ cat.slug }}">
+                            {{ cat.icon }} {{ cat.name }}
+                        </a>
+                        {% endfor %}
                     </div>
                 </li>
+
                 <li><a href="/about">О нас</a></li>
-                <li><a href="/cart" class="cart">Корзина <span class="cart-badge">0</span></a></li>
+                <li>
+                    <a href="/cart" class="cart">
+                        Корзина <span class="cart-badge">0</span>
+                    </a>
+                </li>
+
+                <!-- Кнопки авторизации -->
+                {% if current_user.is_authenticated %}
+                    <li><a href="/admin" class="admin-btn">Админка</a></li>
+                    <li><a href="/logout" class="logout-btn">Выйти</a></li>
+                {% else %}
+                    <li><a href="/login" class="login-btn">Войти</a></li>
+                {% endif %}
             </ul>
         </nav>
+
+        <!-- Бургер-меню для мобильных -->
         <div class="burger">
-            <span></span><span></span><span></span>
+            <span></span>
+            <span></span>
+            <span></span>
         </div>
     </div>
 </header>
 
+<!-- ===================== ОСНОВНОЕ СОДЕРЖИМОЕ ===================== -->
 <main class="main">
     {% block content %}{% endblock %}
 </main>
 
-<!-- КРАСИВЫЙ ПОДВАЛ -->
+<!-- ===================== ФУТЕР ===================== -->
 <footer class="footer">
     <div class="container">
-        <div class="footer__grid">
-            <div>
-                <h4>Шиповник</h4>
-                <p>Самая красивая одежда<br>с доставкой за 2–3 дня ♡</p>
-            </div>
-            <div>
-                <h4>Каталог</h4>
-                <a href="#">Новинки</a>
-                <a href="#">Платья</a>
-                <a href="#">Верх</a>
-                <a href="#">Низ</a>
-            </div>
-            <div>
-                <h4>Помощь</h4>
-                <a href="#">Доставка</a>
-                <a href="#">Возврат</a>
-                <a href="#">Размеры</a>
-                <a href="#">FAQ</a>
-            </div>
-            <div>
-                <h4>Контакты</h4>
-                <p>+7 (999) 999-99-99<br>hello@shipovnik.ru</p>
-            </div>
-        </div>
-        <div class="footer__bottom">
-            © 2025 Шиповник — одежда с характером
-        </div>
+        <p>&copy; 2025 Шиповник — стильная одежда с душой ♡</p>
     </div>
 </footer>
 
+<!-- Подключаем JS для бургер-меню -->
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
