@@ -599,127 +599,156 @@ body {
 
 /* ===================== КРАСИВАЯ СТРАНИЦА ЛОГИНА ===================== */
 
-/* ===================== НЕЖНАЯ И КРАСИВАЯ СТРАНИЦА ВХОДА ===================== */
-.login-wrapper {
+/* ===================== СТРАНИЦА ВХОДА — КРАСИВАЯ, НЕЖНАЯ, С ФОНОМ ===================== */
+/* Обеспечивает видимость фона на всех устройствах */
+.login-section {
     min-height: 100vh;
+    position: relative;
     display: flex;
     align-items: center;
-    justify-content: center;
-    position: relative;
-    padding: 20px;
+    padding: 40px 20px;
+    background: #f8f9fa; /* Запасной цвет, если фото не загрузится */
 }
 
-.login-background {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: url('../images/doma_fon.jpg') center/cover no-repeat;
-    background-attachment: fixed;
-    z-index: 1;
-}
-
-.login-gradient {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(135deg, 
-        rgba(255, 182, 193, 0.92),   /* нежно-розовый */
-        rgba(255, 105, 180, 0.88));  /* чуть ярче */
-    z-index: 2;
-}
-
-.login-content {
-    position: relative;
-    z-index: 10;
+/* Фоновое изображение — на весь экран */
+.login-bg-image {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-    max-width: 500px;
+    height: 100%;
+    background-image: url('../images/doma_fon.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    z-index: -2;
 }
 
-.login-form-box {
-    background: white;
+/* Нежный градиент для читаемости (светлый, не тёмный) */
+.login-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, 
+        rgba(255, 248, 250, 0.9),  /* Нежно-розовый, прозрачный */
+        rgba(255, 240, 244, 0.95)  /* Ещё светлее */
+    );
+    z-index: -1;
+}
+
+/* Контейнер для формы — центрированный */
+.login-container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 520px;
+    margin: 0 auto;
+}
+
+.login-card {
+    background: rgba(255, 255, 255, 0.98);
     padding: 60px 50px;
-    border-radius: 34px;
-    box-shadow: 0 30px 90px rgba(0,0,0,0.25);
+    border-radius: 28px;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.2);
     text-align: center;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 105, 180, 0.1);
 }
 
-.login-form-box h1 {
-    font-size: 3.4rem;
+.login-header h1 {
+    font-size: 3.5rem; /* Увеличенный шрифт, как просил */
     font-weight: 800;
-    color: #d6336c;
+    color: #ff69b4; /* Нежно-розовый */
     margin-bottom: 16px;
+    line-height: 1.1;
 }
 
 .login-greeting {
-    font-size: 1.45rem;
-    color: #555;
-    line-height: 1.7;
+    font-size: 1.4rem; /* Крупный, читаемый текст */
+    color: #666;
+    line-height: 1.6;
     margin-bottom: 40px;
 }
 
-.field {
-    margin-bottom: 24px;
+.form-group {
+    margin-bottom: 28px;
+    text-align: left;
 }
 
-.input-field {
+.form-label {
+    font-size: 1.2rem; /* Увеличенный лейбл */
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.form-input {
     width: 100%;
-    padding: 18px 22px;
-    font-size: 1.3rem;
+    padding: 18px 24px;
+    font-size: 1.25rem; /* Крупный ввод */
     border: 2px solid #f0e6f0;
-    border-radius: 18px;
-    transition: border 0.3s;
+    border-radius: 20px;
+    transition: all 0.3s;
 }
 
-.input-field:focus {
-    {
-    border-color: #ff6b9d;
+.form-input:focus {
+    border-color: #ff69b4;
     outline: none;
+    box-shadow: 0 0 0 4px rgba(255, 105, 180, 0.15);
 }
 
-.submit-button {
-    width: 100%;
+.btn--login {
+    font-size: 1.35rem; /* Крупная кнопка */
     padding: 20px;
-    background: #ff6b9d;
-    color: white;
-    border: none;
-    border-radius: 18px;
-    font-size: 1.4rem;
-    font-weight: 700;
-    cursor: pointer;
-    margin-top: 10px;
-    transition: 0.3s;
+    background: #ff69b4;
+    transition: all 0.3s;
 }
 
-.submit-button:hover {
-    background: #ff8fb3;
-    transform: translateY(-3px);
+.btn--login:hover {
+    background: #ff85c0;
+    transform: translateY(-2px);
 }
 
 .login-note {
     margin-top: 32px;
-    font-size: 1.1rem;
-    color: #777;
-    line-height: 1.6;
+    font-size: 1.15rem;
+    color: #888;
+    line-height: 1.5;
 }
 
-.back-link {
-    display: inline-block;
+.login-footer {
     margin-top: 40px;
-    color: #ff6b9d;
-    font-size:bold 1.2rem;
-    text-decoration: none;
 }
 
-.back-link:hover {
-    text-decoration: underline;
+/* Адаптивность — на мобильке фото не растягивается, текст читаем */
+@media (max-width: 768px) {
+    .login-card {
+        padding: 40px 30px;
+        margin: 20px;
+    }
+    .login-header h1 {
+        font-size: 2.8rem;
+    }
+    .login-greeting {
+        font-size: 1.2rem;
+    }
+    .login-bg-image {
+        background-attachment: scroll; /* На мобильке fixed может лагать */
+    }
 }
 
-.message {
-    padding: 16px;
-    border-radius: 14px;
-    margin: 20px 0;
-    font-weight: 600;
+@media (max-width: 480px) {
+    .login-section {
+        padding: 20px 10px;
+    }
+    .form-input {
+        font-size: 1.1rem;
+        padding: 16px 20px;
+    }
 }
-.message--success { background: #d4edda; color: #155724; }
-.message--error   { background: #f8d7da; color: #721c24; }
-
-
+}
 }

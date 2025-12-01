@@ -13,15 +13,12 @@ from models import db, Category, Product, Admin
 import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-<<<<<<< HEAD
 
 # ВАЖНО: импортируем модели СРАЗУ, до создания приложения!
 from models import db, Category, Product
 
 
 # Создаём приложение
-=======
->>>>>>> d7562a2 (fix: проблема с картинкой doma_fon.jpg)
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = os.urandom(32)
