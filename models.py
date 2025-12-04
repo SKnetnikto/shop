@@ -49,6 +49,61 @@ class Admin(UserMixin, db.Model):
 
     def __repr__(self):
         return f"<Admin {self.username} >"
+    
+    
+    def is_admin(self):
+        return True  # Админы имеют права администратора
+
+
+class User(UserMixin, db.Model):
+    """
+    Модель обычного пользователя (покупателя)
+    """
+    __tablename__ = 'user'
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
+    full_name = db.Column(db.String(100))
+    phone = db.Column(db.String(20))
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    # Связь с корзиной
+    cart_items = db.relationship('CartItem', backref='user', lazy=True, cascade='all, delete-orphan')
+
+    def set_password(self, password):
+        """Хешируем пароль при создании/смене"""
+        self.password_hash = generate_password_hash(password, method='scrypt')
+
+    def check_password(self, password):
+        """Проверяем пароль при входе"""
+        return check_password_hash(self.password_hash, password)
+
+    def __repr__(self):
+        return f"<User {self.username}>"
+    
+     
+    def is_admin(self):
+        return False  # Обычные пользователи не админы
+
+
+class CartItem(db.Model):
+    """
+    Товар в корзине пользователя
+    """
+    __tablename__ = 'cart_item'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    quantity = db.Column(db.Integer, default=1, nullable=False)
+    added_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Связь с товаром
+    product = db.relationship('Product', backref='cart_items', lazy=True)
+
+    def __repr__(self):
+        return f"<CartItem User:{self.user_id} Product:{self.product_id}>"
 
 
 class Product(db.Model):

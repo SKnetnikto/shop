@@ -4,7 +4,8 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from flask_wtf import FlaskForm, CSRFProtect
 from flask_wtf.file import FileField, FileAllowed
 from wtforms import (StringField, PasswordField, SubmitField, FloatField,
-                     TextAreaField, BooleanField, SelectField)
+                     TextAreaField, BooleanField, SelectField, ValidationError)
+
 from wtforms.validators import DataRequired, Length, NumberRange
 from werkzeug.utils import secure_filename
 from models import db, Category, Product, Admin
@@ -16,13 +17,17 @@ import time
 from collections import defaultdict
 from threading import Lock
 
+#================для обработки картинок           =======
+
+from utils.image_processor import process_product_image
+
 # ===================== НАСТРОЙКИ ПРИЛОЖЕНИЯ =====================
 import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 # ВАЖНО: импортируем модели СРАЗУ, до создания приложения!
-from models import db, Category, Product
+from models import db, Category, Product, User, CartItem
 
 
 # Создаём приложение
@@ -89,13 +94,43 @@ login_manager.login_message_category = "info"
 
 @login_manager.user_loader
 def load_user(user_id):
-    return Admin.query.get(int(user_id))
+    # Пытаемся найти админа или обычного пользователя
+    admin = Admin.query.get(int(user_id))
+    if admin:
+        return admin
+    return User.query.get(int(user_id))
 
 db.init_app(app)
 
 # ===================== ФОРМЫ =====================
 class LoginForm(FlaskForm):
     username = StringField('Логин', validators=[DataRequired(), Length(3, 50)])
+    password = PasswordField('Пароль', validators=[DataRequired()])
+    submit = SubmitField('Войти')
+
+class RegisterForm(FlaskForm):
+    username = StringField('Логин', validators=[DataRequired(), Length(3, 50)])
+    email = StringField('Email', validators=[DataRequired(), Length(6, 120)])
+    password = PasswordField('Пароль', validators=[DataRequired(), Length(6, 128)])
+    confirm_password = PasswordField('Подтвердите пароль', validators=[DataRequired()])
+    full_name = StringField('ФИО', validators=[Length(max=100)])
+    phone = StringField('Телефон', validators=[Length(max=20)])
+    submit = SubmitField('Зарегистрироваться')
+
+    def validate_username(self, field):
+        if User.query.filter_by(username=field.data).first() or Admin.query.filter_by(username=field.data).first():
+            raise ValidationError('Этот логин уже занят!')
+
+    def validate_email(self, field):
+        if User.query.filter_by(email=field.data).first():
+            raise ValidationError('Этот email уже зарегистрирован!')
+
+    def validate_confirm_password(self, field):
+        if field.data != self.password.data:
+            raise ValidationError('Пароли не совпадают!')
+
+class UserLoginForm(FlaskForm):
+    username = StringField('Логин или Email', validators=[DataRequired(), Length(3, 120)])
     password = PasswordField('Пароль', validators=[DataRequired()])
     submit = SubmitField('Войти')
 
@@ -131,45 +166,113 @@ def novelties():
     categories = Category.query.order_by(Category.order).all()
     products = Product.query.order_by(Product.created_at.desc()).limit(10).all()
     return render_template('catalog.html', categories=categories, products=products, novelties=True)
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = RegisterForm()
+    if form.validate_on_submit():
+        user = User(
+            username=form.username.data,
+            email=form.email.data,
+            full_name=form.full_name.data,
+            phone=form.phone.data
+        )
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash('Регистрация прошла успешно! Теперь вы можете войти.', 'success')
+        return redirect(url_for('login'))
+    return render_template('register.html', form=form)
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        return redirect("/admin")
-    form = LoginForm()
-    ip = request.remote_addr or 'unknown'
+        return redirect(url_for('index'))  # Всех на главную, не в админку!
+    
+    form = UserLoginForm()
+    
     if form.validate_on_submit():
         username = (form.username.data or '').strip()
+        
+        admin = Admin.query.filter_by(username=username).first()
+        if admin and admin.check_password(form.password.data):
+            login_user(admin)
+            return redirect("/admin")  # Только админа в админку
+        
+        user = User.query.filter(or_(User.username == username, User.email == username)).first()
+        if user and user.check_password(form.password.data):
+            login_user(user)
+            return redirect(url_for('index'))  # Обычного пользователя на главную
+        
+        flash('Неверный логин или пароль', 'error')
+    
+    return render_template('login.html', form=form)
 
-        # Проверяем блокировку по IP или по имени пользователя
+
+
+
+"""@app.route("/login", methods=["GET", "POST"])
+def login():
+    if current_user.is_authenticated:
+        if isinstance(current_user, Admin):
+            return redirect("/admin")
+        return redirect(url_for('index'))
+        
+    form = UserLoginForm()  # Используем UserLoginForm вместо LoginForm
+    ip = request.remote_addr or 'unknown'
+    
+    if form.validate_on_submit():
+        username = (form.username.data or '').strip()
+        
+        # Проверяем блокировку
         ip_key = f"ip:{ip}"
         user_key = f"user:{username}"
         if _is_blocked(ip_key) or _is_blocked(user_key):
             rem = max(_remaining_block_seconds(ip_key), _remaining_block_seconds(user_key))
             flash(f"Слишком много попыток входа. Попробуйте через {rem} секунд.", "error")
-            return render_template("admin_login.html", form=form)
+            return render_template("login.html", form=form)
 
+        # Ищем пользователя среди админов и обычных пользователей
         user = Admin.query.filter_by(username=username).first()
+        if not user:
+            user = User.query.filter(or_(User.username == username, User.email == username)).first()
+            
         if user and user.check_password(form.password.data):
             # успешный вход — очищаем счётчики
             with _attempts_lock:
                 _login_attempts.pop(ip_key, None)
                 _login_attempts.pop(user_key, None)
             login_user(user)
-            return redirect("/admin")
+            
+            if isinstance(user, Admin):
+                return redirect("/admin")
+            return redirect(url_for('index'))
 
-        # неудачная попытка — записать для IP и пользователя
+        # неудачная попытка
         _record_failed(ip_key)
         _record_failed(user_key)
-        # сообщаем пользователю
-        attempts_left_ip = max(0, LOGIN_MAX_ATTEMPTS - _prune_attempts(ip_key))
-        attempts_left_user = max(0, LOGIN_MAX_ATTEMPTS - _prune_attempts(user_key))
-        attempts_left = min(attempts_left_ip, attempts_left_user)
+        attempts_left = min(
+            max(0, LOGIN_MAX_ATTEMPTS - _prune_attempts(ip_key)),
+            max(0, LOGIN_MAX_ATTEMPTS - _prune_attempts(user_key))
+        )
+        
         if attempts_left <= 0:
             flash("Слишком много попыток входа. Попробуйте позже.", "error")
         else:
             flash(f"Неверный логин или пароль. Осталось попыток: {attempts_left}", "error")
-    return render_template("admin_login.html", form=form)
+            
+    return render_template("login.html", form=form)"""
+
+@app.route("/profile")
+@login_required
+def profile():
+    if current_user.is_admin:
+        return redirect(url_for('admin_panel'))
+    return render_template('profile.html')
+
+
+
 
 @app.route("/logout")
 @login_required
@@ -184,71 +287,26 @@ def admin_panel():
     form.category.choices = [(c.id, c.name) for c in Category.query.order_by(Category.order).all()]
 
     if form.validate_on_submit():
-        filename = "placeholder.png"
+    # Обработка фото — если загружено новое
         if form.image.data:
-            # process and save multiple sizes, return the main filename (800px)
-            orig = secure_filename(form.image.data.filename)
-            base = uuid4().hex
-            def save_image_variants(file_storage, base_name):
-                try:
-                    img = Image.open(file_storage.stream)
-                except Exception:
-                    file_storage.stream.seek(0)
-                    img = Image.open(file_storage.stream)
+            image_filename = process_product_image(form.image.data)
+        else:
+            image_filename = "placeholder.jpg"  # если фото не выбрано
 
-                sizes = (400, 800, 1600)
-                for w in sizes:
-                    # don't upscale small images
-                    if img.width <= w:
-                        out = img.copy()
-                    else:
-                        ratio = w / img.width
-                        h = int(img.height * ratio)
-                        out = img.resize((w, h), Image.LANCZOS)
-
-                    # convert to RGB (no alpha) for JPEG/WebP
-                    if out.mode in ("RGBA", "LA"):
-                        bg = Image.new("RGB", out.size, (255, 255, 255))
-                        bg.paste(out, mask=out.split()[-1])
-                        out_rgb = bg
-                    else:
-                        out_rgb = out.convert("RGB")
-
-                    jpg_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{base_name}-{w}.jpg")
-                    webp_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{base_name}-{w}.webp")
-                    out_rgb.save(jpg_path, "JPEG", quality=85, optimize=True)
-                    try:
-                        out_rgb.save(webp_path, "WEBP", quality=80, method=6)
-                    except Exception:
-                        # some Pillow builds may not support method arg
-                        out_rgb.save(webp_path, "WEBP", quality=80)
-
-                # return the canonical main filename (800px jpg)
-                return f"{base_name}-800.jpg"
-
-            filename = save_image_variants(form.image.data, base)
-
-        product = Product(
+            product = Product(
             title=form.title.data,
             price=form.price.data,
             old_price=form.old_price.data or None,
             description=form.description.data or "",
-            sku=form.sku.data or None,
-            brand=form.brand.data or None,
-            color=form.color.data or None,
-            tags=form.tags.data or "",
-            image=filename,
+            image=image_filename,
             category_id=form.category.data,
             is_new=form.is_new.data,
             is_sale=form.is_sale.data
         )
-        # Формируем объединённый текст для быстрого поиска
-        product.search_text = ' '.join(filter(None, [product.title, product.description, product.tags, product.brand, product.color, product.sku]))
         db.session.add(product)
         db.session.commit()
-        flash(f"Товар «{product.title}» добавлен!", "success")
+        flash(f"Товар «{product.title}» успешно добавлен!", "success")
         return redirect("/admin")
-
     products = Product.query.order_by(Product.created_at.desc()).all()
     return render_template("admin_panel.html", form=form, products=products)
 
@@ -280,7 +338,15 @@ def edit_product(product_id):
     form.category.choices = [(c.id, c.name) for c in Category.query.order_by(Category.order).all()]
 
     if form.validate_on_submit():
-        # Обновляем данные
+        old_image = product.image  # запоминаем старо
+       
+        # Если загружено новое фото — обрабатываем, иначе оставляем старое
+        if form.image.data:
+            image_filename = process_product_image(form.image.data, delete_old_image=old_image)
+            product.image = image_filename
+        # иначе image остаётся прежним — ничего не трогать не надо
+
+        # Обновляем остальные поля
         product.title = form.title.data
         product.price = form.price.data
         product.old_price = form.old_price.data or None
@@ -288,70 +354,11 @@ def edit_product(product_id):
         product.category_id = form.category.data
         product.is_new = form.is_new.data
         product.is_sale = form.is_sale.data
-
-        # Если загружено новое фото — заменяем
-        if form.image.data:
-            base = uuid4().hex
-            # save new variants
-            def save_image_variants_inline(file_storage, base_name):
-                try:
-                    img = Image.open(file_storage.stream)
-                except Exception:
-                    file_storage.stream.seek(0)
-                    img = Image.open(file_storage.stream)
-                sizes = (400, 800, 1600)
-                for w in sizes:
-                    if img.width <= w:
-                        out = img.copy()
-                    else:
-                        ratio = w / img.width
-                        h = int(img.height * ratio)
-                        out = img.resize((w, h), Image.LANCZOS)
-                    if out.mode in ("RGBA", "LA"):
-                        bg = Image.new("RGB", out.size, (255, 255, 255))
-                        bg.paste(out, mask=out.split()[-1])
-                        out_rgb = bg
-                    else:
-                        out_rgb = out.convert("RGB")
-                    jpg_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{base_name}-{w}.jpg")
-                    webp_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{base_name}-{w}.webp")
-                    out_rgb.save(jpg_path, "JPEG", quality=85, optimize=True)
-                    try:
-                        out_rgb.save(webp_path, "WEBP", quality=80, method=6)
-                    except Exception:
-                        out_rgb.save(webp_path, "WEBP", quality=80)
-                return f"{base_name}-800.jpg"
-
-            new_filename = save_image_variants_inline(form.image.data, base)
-            # Remove old variants (if not placeholder)
-            if product.image and product.image != "placeholder.png":
-                old_base = os.path.splitext(product.image)[0]
-                # if previous filenames used -{size}, strip trailing -<num>
-                if '-' in old_base:
-                    old_base = old_base.split('-')[0]
-                for fname in os.listdir(app.config['UPLOAD_FOLDER']):
-                    if fname.startswith(old_base + '-'):
-                        try:
-                            os.remove(os.path.join(app.config['UPLOAD_FOLDER'], fname))
-                        except:
-                            pass
-            product.image = new_filename
-
-        # Обновляем дополнительные поля
-        product.sku = form.sku.data or None
-        product.brand = form.brand.data or None
-        product.color = form.color.data or None
-        product.tags = form.tags.data or ""
-        # Обновляем объединённый текст поиска
-        product.search_text = ' '.join(filter(None, [product.title, product.description, product.tags, product.brand, product.color, product.sku]))
-
+    
         db.session.commit()
-        flash(f"Товар «{product.title}» успешно обновлён!", "success")
-        return redirect(url_for('admin_products'))
-
+        flash("Товар обновлён!", "success")
+        return redirect("/admin/products")
     return render_template("admin_edit.html", form=form, product=product)
-
-
 
 # ===================== КОНТЕКСТНЫЙ ПРОЦЕССОР =====================
 # Делает переменную categories доступной ВО ВСЕХ шаблонах автоматически
@@ -364,6 +371,12 @@ def inject_categories():
     categories = Category.query.order_by(Category.order).all()
     return dict(categories=categories)
 
+
+# ===================== КОРЗИНА =====================
+@app.route("/cart")
+def cart():
+    # Возвращаем шаблон корзины (пока пустой)
+    return render_template("cart.html")
 
 # ===================== ПОИСК =====================
 @app.route('/search')

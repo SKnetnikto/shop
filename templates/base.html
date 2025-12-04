@@ -37,22 +37,26 @@
                 </li>
 
                 {% if not current_user.is_authenticated %}
-                    <!-- 'О нас' перемещено в футер -->
-                {% endif %}
-                <li>
-                    <a href="/cart" class="cart">
-                        Корзина <span class="cart-badge">0</span>
-                    </a>
-                </li>
+    <!-- 'О нас' перемещено в футер -->
+{% endif %}
+<li>
+    <a href="/cart" class="cart">
+        Корзина <span class="cart-badge">0</span>
+    </a>
+</li>
 
-                <!-- АДМИНСКИ / ВТОРОЙ СЛОТ (держим структуру) -->
-                {% if current_user.is_authenticated %}
-                    <li><a href="/admin" class="admin-btn">Добавить товар</a></li>
-                    <li><a href="/logout" class="logout-btn">Выйти</a></li>
-                {% else %}
-                    <li><a href="{{ url_for('novelties') }}" class="nav-link">Новинки</a></li>
-                    <li><a href="/login" class="login-btn">Войти</a></li>
-                {% endif %}
+<!-- АДМИНСКИ / ВТОРОЙ СЛОТ (держим структуру) -->
+ <!-- АДМИНСКИ / ВТОРОЙ СЛОТ (держим структуру) -->
+{% if current_user.is_authenticated %}
+    <li><a href="/logout" class="logout-btn">Выйти</a></li>
+{% else %}
+    <li><a href="{{ url_for('novelties') }}" class="nav-link">Новинки</a></li>
+    <li><a href="{{ url_for('login') }}" class="login-btn">Войти</a></li>
+    <li><a href="{{ url_for('register') }}" class="register-btn">Регистрация</a></li>
+{% endif %}
+
+
+
             </ul>
         </nav>
 

@@ -58,6 +58,7 @@ body {
     font-weight: 900;
     background: linear-gradient(90deg,#ff2e63,#ff8fab);
     -webkit-background-clip: text;
+    background-clip: text;    
     color: transparent;
     letter-spacing: -1px;
 }
@@ -625,3 +626,238 @@ body.dark-mode {
 .footer-links { margin-top: 8px; }
 .footer a { color: #cfcfcf; text-decoration: none; font-weight: 600; }
 .footer a:hover { color: #fff; text-decoration: underline; }
+
+
+.auth-buttons {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.btn--login,
+.btn--register {
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.btn--login {
+    background: transparent;
+    color: #ff2e63;
+    border: 2px solid #ff2e63;
+}
+
+.btn--register {
+    background: linear-gradient(90deg, #ff6b9d, #ff2e63);
+    color: white;
+    border: none;
+}
+
+/* Мобильная версия */
+@media (max-width: 992px) {
+    .auth-buttons {
+        flex-direction: column;
+        width: 100%;
+        margin: 20px 0;
+    }
+
+    .btn--login,
+    .btn--register {
+        width: 100%;
+        text-align: center;
+        padding: 12px 24px;
+        font-size: 1.1rem;
+    }
+}
+
+/* Стили только для формы регистрации */
+.register-section .register-container {
+    max-width: 600px;  /* Уменьшили максимальную ширину */
+    margin: 50px auto;
+    padding: 40px;  /* Уменьшили отступы */
+}
+
+.register-section .form-input {
+    width: 100%;
+    max-width: 400px;  /* Ограничили максимальную ширину полей */
+    margin: 0 auto;  /* Центрируем поля */
+    padding: 12px 16px;  /* Уменьшили внутренние отступы */
+    font-size: 1rem;  /* Уменьшили размер шрифта */
+}
+
+.register-section .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    max-width: 400px;  /* Ограничили ширину сетки */
+    margin: 0 auto;
+}
+
+/* Мобильная версия */
+@media (max-width: 768px) {
+    .register-section .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .register-section .form-input {
+        max-width: 100%;
+    }
+}
+/* Стили только для формы входа */
+.login-section .login-container {
+    max-width: 400px;  /* Уменьшили ширину */
+    margin: 50px auto;
+    padding: 40px;  /* Уменьшили отступы */
+}
+
+.login-section .form-input {
+    width: 100%;
+    padding: 12px 16px;  /* Уменьшили внутренние отступы */
+    font-size: 1rem;  /* Уменьшили размер шрифта */
+}
+
+.login-section .btn--full {
+    padding: 14px;  /* Уменьшили высоту кнопки */
+    font-size: 1.1rem;  /* Уменьшили размер шрифта */
+}
+
+/* Мобильная версия */
+@media (max-width: 768px) {
+    .login-section .login-container {
+        padding: 30px 20px;
+        margin: 20px;
+    }
+    
+    .login-section .form-input {
+        font-size: 0.95rem;
+    }
+}
+
+
+/* Профиль пользователя */
+.profile-section {
+    padding: 80px 0;
+}
+
+.profile-title {
+    font-size: 3.2rem;
+    text-align: center;
+    margin-bottom: 40px;
+    color: #ff2e63;
+    font-weight: 800;
+}
+
+.profile-card {
+    background: white;
+    padding: 50px;
+    border-radius: 28px;
+    box-shadow: 0 20px 60px rgba(255,46,99,0.12);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.profile-info {
+    margin-bottom: 40px;
+}
+
+.profile-info h2 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.profile-info p {
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    color: #555;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+/* Мобильная версия */
+@media (max-width: 768px) {
+    .profile-card {
+        padding: 30px;
+        margin: 20px;
+    }
+    
+    .profile-actions {
+        flex-direction: column;
+    }
+    
+    .profile-actions .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*Общие стили (*, html, body, .container)
+Шапка (.header, .header__inner, .logo)
+Навигация (.nav__list, .nav__dropdown, .dropdown)
+Поиск (.nav-search, .search-input, .search-btn)
+Корзина (.cart, .cart-badge)
+Бургер-меню (.burger)
+Переключатель темы (.theme-toggle, .theme-icon)
+Футер (.footer)
+Темная тема (.dark-mode)
+
+Стили, применяемые в index.html:
+Hero-секция (.hero, .hero h1, .hero p, .hero .btn)
+
+Стили, применяемые в login.html:
+Секция входа (.login-section, .login-bg-image, .login-overlay)
+Карточка входа (.login-card, .login-header, .login-greeting)
+Форма (.form-group, .form-label, .form-input)
+Кнопки (.btn--full, .btn--back)
+Флеш-сообщения (.flash)
+
+Стили, применяемые в register.html:
+Те же стили, что и в login.html
+
+Стили, применяемые в админских файлах:
+Заголовки (.admin-title)
+Формы (.add-product-card, .form-grid, .form-label-big, .form-input-big)
+Загрузка фото (.form-file-input, .photo-hint, .image-preview)
+Чекбоксы (.checkbox-group, .checkbox-label)
+Кнопки (.btn--big)
+Список товаров (.products-list, .empty-state)
+
+Стили, применяемые в catalog.html:
+Hero каталога (.catalog-hero)
+Боковая панель (.sidebar)
+Сетка товаров (.products-grid)
+Карточки товаров (.product-card)
+
+Стили, применяемые в cart.html:
+Секция корзины (.cart-section)
+Пустая корзина (.cart-empty)
+Предложения (.cart-suggestions)
+Преимущества (.cart-benefits)
+
+
+Неиспользуемые стили:
+.products-list (есть в CSS, но в HTML используется .products-admin-grid)
+.form-error (есть в CSS, но в HTML используется .error)
+Стили без применения:
+.login-overlay (установлен display: none)
+Некоторые стили для темной темы могут не применяться из-за отсутствия соответствующих классов*\

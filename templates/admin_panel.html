@@ -20,10 +20,14 @@
             <div class="add-product-card">
                 <h2>Добавить новый товар</h2>
 
+
+
                 <form method="POST" enctype="multipart/form-data" novalidate>
                     {{ form.hidden_tag() }}
 
                     <div class="form-grid">
+
+             
                         <div class="form-group">
                             {{ form.title.label(class="form-label-big") }}
                             {{ form.title(class="form-input-big", placeholder="Например: Платье летнее «Розовый закат»") }}
@@ -98,28 +102,32 @@
                     </div>
 
                     <!-- Загрузка фото с превью и подсказкой -->
-                    <div class="form-group">
-                        {{ form.image.label(class="form-label-big") }}
-                        {{ form.image(class="form-file-input", accept="image/jpeg,image/png,image/webp") }}
-                        {% if form.image.errors %}
-                            <div class="form-error">{{ form.image.errors[0] }}</div>
-                        {% endif %}
-                        
-                        <div class="photo-hint">
-                            <strong>Рекомендации по фото:</strong><br>
-                            • Формат: JPG, PNG или WebP<br>
-                            • Размер: до 5 МБ<br>
-                            • Пропорции: квадрат (1:1) или 3:4 — лучше всего смотрится<br>
-                            • Фон: светлый или однотонный<br>
-                            • Товар по центру, без водяных знаков
-                        </div>
+                    <!-- Загрузка фото — красиво и без дублей -->
+<div class="form-group">
+    {{ form.image.label(class="form-label-big") }}
+    
+    <div class="file-upload-wrapper">
+        <label for="image" class="file-upload-button">
+            Добавить фото товара
+        </label>
+        {{ form.image(class="form-file-input", id="image") }}
+    </div>
 
-                        <!-- Превью фото -->
-                        <div id="image-preview" class="image-preview" style="display: none; margin-top: 20px;">
-                            <img id="preview-img" src="" alt="Превью">
-                            <p style="margin-top: 8px; color: #27ae60; font-weight: 600;">Фото загружено — выглядит отлично!</p>
-                        </div>
-                    </div>
+    <!-- Одна единственная подсказка — красивая и понятная -->
+    <div class="photo-hint">
+        <strong>Рекомендации по фото:</strong><br>
+        • Формат: JPG, PNG, WebP (автоматически станет JPG)<br>
+        • Размер: до 5 МБ, минимум 800×1000 px<br>
+        • Система создаст 3 версии: маленькую, среднюю и большую<br>
+        • Фото будет выровнено по центру на белом фоне
+    </div>
+
+    <!-- Превью -->
+    <div id="image-preview" class="image-preview" style="display: none;">
+        <img id="preview-img" src="" alt="Превью">
+        <p class="preview-text">Фото загружено — отлично!</p>
+    </div>
+</div>
 
                     <div class="checkbox-group">
                         <label class="checkbox-label">

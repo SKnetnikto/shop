@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Профиль — Шиповник{% endblock %}
+
+{% block content %}
+<section class="profile-section">
+    <div class="container">
+        <h1 class="profile-title">Мой профиль</h1>
+        
+        <div class="profile-card">
+            <div class="profile-info">
+                <h2>Информация о пользователе</h2>
+                <p><strong>Логин:</strong> {{ current_user.username }}</p>
+                <p><strong>Email:</strong> {{ current_user.email }}</p>
+                {% if current_user.full_name %}
+                <p><strong>ФИО:</strong> {{ current_user.full_name }}</p>
+                {% endif %}
+                {% if current_user.phone %}
+                <p><strong>Телефон:</strong> {{ current_user.phone }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="profile-actions">
+                <a href="{{ url_for('index') }}" class="btn btn--back">← На главную</a>
+                <a href="{{ url_for('cart') }}" class="btn btn--primary">Моя корзина</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
