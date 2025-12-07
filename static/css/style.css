@@ -143,6 +143,34 @@ body {
     gap: 8px;
 }
 
+.admin-btn {
+    background: #4CAF50;
+    color: white;
+    padding: 12px 28px;
+    border-radius: 50px;
+    font-weight: 600;
+    transition: .3s;
+}
+
+.admin-btn:hover {
+    background: #45a049;
+    color: white;
+}
+
+/* Адаптивность для кнопок корзины и админа */
+@media (max-width: 768px) {
+    .cart, .admin-btn {
+        padding: 10px 16px;
+        font-size: 0.9rem;
+    }
+    
+    .cart-badge {
+        width: 20px;
+        height: 20px;
+        font-size: 0.7rem;
+    }
+}
+
 .cart-badge {
     background: white;
     color: #ff2e63;
@@ -526,6 +554,43 @@ body {
     padding: 20px !important;
 }
 
+.admin-actions {
+    margin-bottom: 30px;
+    text-align: right;
+}
+
+.btn-edit, .btn-delete {
+    display: inline-block;
+    padding: 8px 16px;
+    margin: 5px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: .3s;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-edit {
+    background: #4CAF50;
+    color: white;
+}
+
+.btn-edit:hover {
+    background: #45a049;
+    color: white;
+}
+
+.btn-delete {
+    background: #f44336;
+    color: white;
+}
+
+.btn-delete:hover {
+    background: #d32f2f;
+    color: white;
+}
+
 .products-list {
     background: white;
     padding: 40px;
@@ -860,4 +925,18 @@ Hero каталога (.catalog-hero)
 .form-error (есть в CSS, но в HTML используется .error)
 Стили без применения:
 .login-overlay (установлен display: none)
-Некоторые стили для темной темы могут не применяться из-за отсутствия соответствующих классов*\
+
+/* Адаптивность для кнопок корзины и админа в мобильном меню */
+@media (max-width: 768px) {
+    .nav__list {
+        flex-direction: column;
+        gap: 30px;
+    }
+    
+    .cart, .admin-btn {
+        padding: 12px 24px;
+        width: 80%;
+        margin: 0 auto;
+        text-align: center;
+    }
+}

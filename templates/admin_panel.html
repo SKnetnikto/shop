@@ -83,6 +83,14 @@
                                 <div class="form-error">{{ form.color.errors[0] }}</div>
                             {% endif %}
                         </div>
+                        
+                        <div class="form-group">
+                            {{ form.sizes.label(class="form-label-big") }}
+                            {{ form.sizes(class="form-input-big", placeholder="42, 44, 46, 48, 50, 52, 54") }}
+                            {% if form.sizes.errors %}
+                                <div class="form-error">{{ form.sizes.errors[0] }}</div>
+                            {% endif %}
+                        </div>
 
                         <div class="form-group">
                             {{ form.tags.label(class="form-label-big") }}
@@ -143,6 +151,43 @@
             </div>
 
             
+        </div>
+
+        <!-- Список добавленных товаров -->
+        <div style="margin-top: 60px;">
+            <h2 class="admin-title">Последние добавленные товары ({{ products|length }})</h2>
+            
+            {% if products %}
+                <div class="products-admin-grid">
+                    {% for product in products %}
+                    <div class="product-admin-card">
+                        <img src="{{ url_for('static', filename='images/products/' + product.image) }}" alt="{{ product.title }}">
+                        <div class="product-admin-info">
+                            <h3>{{ product.title }}</h3>
+                            <p><strong>{{ product.price }} ₽</strong> {% if product.old_price %}<del>{{ product.old_price }} ₽</del>{% endif %}</p>
+                            <p>{{ product.category.name }} • {{ 'Новинка' if product.is_new else '' }} {{ 'Sale' if product.is_sale else '' }}</p>
+                            {% if product.sizes %}
+                                <p><strong>Размеры:</strong> {{ product.sizes }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="product-admin-actions">
+                            <a href="{{ url_for('edit_product', product_id=product.id) }}" class="btn-edit">Редактировать</a>
+                            <form method="POST" action="{{ url_for('delete_product', product_id=product.id) }}"
+                                  onsubmit="return confirm('Удалить «{{ product.title }}»?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn-delete">Удалить</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div style="text-align: center; margin-top: 40px;">
+                    <a href="{{ url_for('admin_products') }}" class="btn btn--primary">Все товары</a>
+                </div>
+            {% else %}
+                <p style="text-align: center; margin-top: 20px;">Товары еще не добавлены</p>
+            {% endif %}
         </div>
 
         <div style="text-align: center; margin-top: 60px;">

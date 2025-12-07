@@ -16,6 +16,8 @@ import io
 import time
 from collections import defaultdict
 from threading import Lock
+from datetime import timedelta
+
 
 #================для обработки картинок           =======
 
@@ -39,6 +41,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'images', 'products')
 app.config['MAX_CONTENT_LENGTH'] = 8 * 1024 * 1024
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'webp', 'gif'}
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=1)  # 1 день
+
 
 # Простейший in-memory лимитер попыток входа
 # Ограничение: не более LOGIN_MAX_ATTEMPTS попыток в LOGIN_WINDOW_SECONDS
@@ -142,6 +146,7 @@ class ProductForm(FlaskForm):
     sku = StringField('Артикул', validators=[Length(max=64)])
     brand = StringField('Бренд', validators=[Length(max=80)])
     color = StringField('Цвет', validators=[Length(max=50)])
+    sizes = StringField('Размеры (через запятую)', validators=[Length(max=200)], description='Например: 42, 44, 46, 48, 50, 52, 54')
     tags = StringField('Теги (через запятую)', validators=[Length(max=200)])
     image = FileField('Фото', validators=[FileAllowed(['jpg', 'jpeg', 'png', 'webp'])])
     category = SelectField('Категория', coerce=int, validators=[DataRequired()])
@@ -197,12 +202,12 @@ def login():
         
         admin = Admin.query.filter_by(username=username).first()
         if admin and admin.check_password(form.password.data):
-            login_user(admin)
+            login_user(admin, remember=True)
             return redirect("/admin")  # Только админа в админку
         
         user = User.query.filter(or_(User.username == username, User.email == username)).first()
         if user and user.check_password(form.password.data):
-            login_user(user)
+            login_user(user, remember=True)
             return redirect(url_for('index'))  # Обычного пользователя на главную
         
         flash('Неверный логин или пароль', 'error')
@@ -243,7 +248,7 @@ def login():
             with _attempts_lock:
                 _login_attempts.pop(ip_key, None)
                 _login_attempts.pop(user_key, None)
-            login_user(user)
+            login_user(user, remember=True)
             
             if isinstance(user, Admin):
                 return redirect("/admin")
@@ -286,43 +291,71 @@ def admin_panel():
     form = ProductForm()
     form.category.choices = [(c.id, c.name) for c in Category.query.order_by(Category.order).all()]
 
-    if form.validate_on_submit():
-    # Обработка фото — если загружено новое
+    # Обработка отправки формы вне зависимости от валидации
+    if request.method == "POST":
+        print("Форма отправлена, начинаем обработку")
+        # Обработка фото — если загружено новое
         if form.image.data:
+            print("Загружено изображение:", form.image.data.filename)
             image_filename = process_product_image(form.image.data)
         else:
+            print("Изображение не выбрано, используем placeholder")
             image_filename = "placeholder.jpg"  # если фото не выбрано
 
-            product = Product(
-            title=form.title.data,
-            price=form.price.data,
-            old_price=form.old_price.data or None,
+        print("Создаем объект товара")
+        
+        # Получаем данные из формы, с запасными значениями для обязательных полей
+        title = form.title.data or "Без названия"
+        price = form.price.data or 0
+        category_id = form.category.data or 1  # ID первой категории
+        
+        product = Product(
+            title=title,
+            price=price,
+            old_price=form.old_price.data,
             description=form.description.data or "",
             image=image_filename,
-            category_id=form.category.data,
+            category_id=category_id,
             is_new=form.is_new.data,
-            is_sale=form.is_sale.data
+            is_sale=form.is_sale.data,
+            sizes=form.sizes.data
         )
+        print("Добавляем товар в сессию")
         db.session.add(product)
+        print("Сохраняем изменения в БД")
         db.session.commit()
+        print(f"Товар «{product.title}» успешно добавлен!")
         flash(f"Товар «{product.title}» успешно добавлен!", "success")
-        return redirect("/admin")
+        return redirect(url_for("admin_products"))
+    else:
+        # Если форма не прошла валидацию, показываем ошибки
+        if form.errors:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    flash(f"Ошибка в поле «{field.capitalize()}»: {error}", "error")
     products = Product.query.order_by(Product.created_at.desc()).all()
     return render_template("admin_panel.html", form=form, products=products)
 
 @app.route("/admin/delete/<int:product_id>", methods=["POST"])
 @login_required
 def delete_product(product_id):
-    product = Product.query.get_or_404(product_id)
-    if product.image != "placeholder.png":
-        try:
-            os.remove(os.path.join(app.config['UPLOAD_FOLDER'], product.image))
-        except:
-            pass
-    db.session.delete(product)
-    db.session.commit()
-    flash("Товар удалён", "info")
-    return redirect("/admin")
+    try:
+        product = Product.query.get_or_404(product_id)
+        if product.image != "placeholder.png":
+            # Удаляем все три размера изображения (thumb, medium, full)
+            base_name = product.image.replace("_thumb.jpg", "")
+            for suffix in ["thumb", "medium", "full"]:
+                try:
+                    os.remove(os.path.join(app.config['UPLOAD_FOLDER'], f"{base_name}_{suffix}.jpg"))
+                except:
+                    pass
+        db.session.delete(product)
+        db.session.commit()
+        flash(f"Товар «{product.title}» удалён", "info")
+    except Exception as e:
+        flash(f"Ошибка при удалении товара: {str(e)}", "error")
+        return redirect(url_for("admin_products"))
+    return redirect(url_for("admin_products"))
 @app.route("/admin/products")
 @login_required
 def admin_products():
@@ -354,6 +387,7 @@ def edit_product(product_id):
         product.category_id = form.category.data
         product.is_new = form.is_new.data
         product.is_sale = form.is_sale.data
+        product.sizes = form.sizes.data
     
         db.session.commit()
         flash("Товар обновлён!", "success")

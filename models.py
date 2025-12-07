@@ -127,6 +127,7 @@ class Product(db.Model):
     brand = db.Column(db.String(80), nullable=True)
     color = db.Column(db.String(50), nullable=True)
     sku = db.Column(db.String(64), nullable=True)
+    sizes = db.Column(db.String(200), nullable=True)            # размеры одежды через запятую (42, 44, 46, 48, 50 и т.д.)
     search_text = db.Column(db.Text, nullable=True, index=True)  # объединённый текст для поиска
 
     # Внешний ключ — связь с категорией

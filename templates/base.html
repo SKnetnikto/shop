@@ -40,9 +40,13 @@
     <!-- 'О нас' перемещено в футер -->
 {% endif %}
 <li>
-    <a href="/cart" class="cart">
-        Корзина <span class="cart-badge">0</span>
-    </a>
+    {% if current_user.is_authenticated and current_user.is_admin %}
+        <a href="{{ url_for('admin_panel') }}" class="admin-btn">Добавить товар</a>
+    {% else %}
+        <a href="/cart" class="cart">
+            Корзина <span class="cart-badge">0</span>
+        </a>
+    {% endif %}
 </li>
 
 <!-- АДМИНСКИ / ВТОРОЙ СЛОТ (держим структуру) -->
@@ -82,7 +86,7 @@
     {% block content %}{% endblock %}
 </main>
 
-<footer class="footer">
+<footer class="header">
     <div class="container">
         <p>© 2025 Шиповник — одежда с душой ♡</p>
         <p class="footer-links"><a href="/about">О нас</a></p>

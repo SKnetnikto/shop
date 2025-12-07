@@ -4,6 +4,18 @@
 {% block content %}
 <section class="admin-section">
     <div class="container">
+        <!-- Флеш-сообщения -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash flash--{{ category }} flash--big">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <div class="admin-actions">
+            <a href="{{ url_for('admin_panel') }}" class="btn btn--big">Добавить еще один товар</a>
+        </div>
         <h1 class="admin-title">Все товары ({{ products|length }})</h1>
 
 
@@ -17,10 +29,14 @@
                         <h3>{{ product.title }}</h3>
                         <p><strong>{{ product.price }} ₽</strong> {% if product.old_price %}<del>{{ product.old_price }} ₽</del>{% endif %}</p>
                         <p>{{ product.category.name }} • {{ 'Новинка' if product.is_new else '' }} {{ 'Sale' if product.is_sale else '' }}</p>
+                        {% if product.sizes %}
+                            <p><strong>Размеры:</strong> {{ product.sizes }}</p>
+                        {% endif %}
                     </div>
                     <div class="product-admin-actions">
                         <form method="POST" action="{{ url_for('delete_product', product_id=product.id) }}" 
                               onsubmit="return confirm('Удалить «{{ product.title }}»?')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn-delete">Удалить</button>
                         </form>
                     </div>

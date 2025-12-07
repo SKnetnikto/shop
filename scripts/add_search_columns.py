@@ -25,6 +25,8 @@ if 'sku' not in cols:
     to_add.append("ALTER TABLE product ADD COLUMN sku VARCHAR(64)")
 if 'search_text' not in cols:
     to_add.append("ALTER TABLE product ADD COLUMN search_text TEXT")
+if 'sizes' not in cols:
+    to_add.append("ALTER TABLE product ADD COLUMN sizes VARCHAR(200)")
 
 if not to_add:
     print('All columns already exist.')

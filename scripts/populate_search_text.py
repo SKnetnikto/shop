@@ -12,7 +12,7 @@ con = sqlite3.connect(db_path)
 cur = con.cursor()
 
 # Read all products
-cur.execute("SELECT id, title, description, tags, brand, color, sku FROM product")
+cur.execute("SELECT id, title, description, tags, brand, color, sku, sizes FROM product")
 rows = cur.fetchall()
 for r in rows:
     pid = r[0]
