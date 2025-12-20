@@ -36,38 +36,37 @@
                     </div>
                 </li>
 
-                {% if not current_user.is_authenticated %}
-    <!-- 'О нас' перемещено в футер -->
-{% endif %}
-<li>
-    {% if current_user.is_authenticated and current_user.is_admin %}
-        <a href="{{ url_for('admin_panel') }}" class="admin-btn">Добавить товар</a>
-    {% else %}
-        <a href="/cart" class="cart">
-            Корзина <span class="cart-badge">0</span>
-        </a>
-    {% endif %}
-</li>
+                <li>
+                    {% if current_user.is_authenticated and current_user.is_admin() %}
+                        <a href="{{ url_for('admin_panel') }}" class="admin-btn">Добавить товар</a>
+                    {% else %}
+                        <a href="{{ url_for('cart') }}" class="cart">
+                            Корзина 
+                            {% if current_user.is_authenticated %}
+                                <span class="cart-badge">
+                                    {{ current_user.cart_items|length }}
+                                </span>
+                            {% else %}
+                                <span class="cart-badge">0</span>
+                            {% endif %}
+                        </a>
+                    {% endif %}
+                </li>
 
-<!-- АДМИНСКИ / ВТОРОЙ СЛОТ -->
-{% if current_user.is_authenticated %}
-    <li><a href="/logout" class="logout-btn">Выйти</a></li>
-{% else %}
-    <li><a href="{{ url_for('novelties') }}" class="nav-link">Новинки</a></li>
-    <li><a href="{{ url_for('login') }}" class="login-btn">Войти</a></li>
-    <li><a href="{{ url_for('register') }}" class="register-btn">Регистрация</a></li>
-{% endif %}
-
-
-
+                {% if current_user.is_authenticated %}
+                    <li><a href="/logout" class="logout-btn">Выйти</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('novelties') }}" class="nav-link">Новинки</a></li>
+                    <li><a href="{{ url_for('login') }}" class="login-btn">Войти</a></li>
+                    <li><a href="{{ url_for('register') }}" class="register-btn">Регистрация</a></li>
+                {% endif %}
             </ul>
         </nav>
 
-        <!-- Переключатель тёмной темы (одна иконка) -->
+        <!-- Переключатель тёмной темы -->
         <div class="theme-toggle">
             <input type="checkbox" id="theme-switch" class="theme-switch-input">
             <label for="theme-switch" class="theme-icon" title="Переключить тему" aria-label="Переключить тему">
-                <!-- Иконка через pseudo-element в CSS -->
                 <span class="icon" aria-hidden="true"></span>
             </label>
         </div>
@@ -85,13 +84,20 @@
     {% block content %}{% endblock %}
 </main>
 
-<footer class="header">
+<footer class="footer">
     <div class="container">
         <p>© 2025 Шиповник — одежда с душой ♡</p>
         <p class="footer-links"><a href="/about">О нас</a></p>
     </div>
 </footer>
 
+<!-- Основной скрипт сайта -->
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+<!-- Скрипт корзины — подключается ТОЛЬКО на странице /cart -->
+{% if request.endpoint == 'cart' %}
+    <script src="{{ url_for('static', filename='js/cart.js') }}"></script>
+{% endif %}
+
 </body>
 </html>

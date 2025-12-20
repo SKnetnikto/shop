@@ -1,10 +1,11 @@
 # app.py — финальная, проверенная и 100% рабочая версия
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, abort
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_wtf import FlaskForm, CSRFProtect
 from flask_wtf.file import FileField, FileAllowed
 from wtforms import (StringField, PasswordField, SubmitField, FloatField,
                      TextAreaField, BooleanField, SelectField, ValidationError)
+from functools import wraps
 
 from wtforms.validators import DataRequired, Length, NumberRange
 from werkzeug.utils import secure_filename
@@ -86,6 +87,8 @@ def _remaining_block_seconds(key):
     rem = int(expires - time.time())
     return rem if rem > 0 else 0
 
+
+
 # Создаём папки
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(os.path.join(basedir, 'instance'), exist_ok=True)  # ← важная строка!
@@ -95,6 +98,16 @@ csrf = CSRFProtect(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message_category = "info"
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return redirect(url_for('login'))
+        if not (hasattr(current_user, 'is_admin') and current_user.is_admin()):
+            abort(403)  # Запрещено
+        return f(*args, **kwargs)
+    return decorated_function
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -313,7 +326,7 @@ def login():
 @app.route("/profile")
 @login_required
 def profile():
-    if current_user.is_admin:
+    if current_user.is_admin():  # или hasattr(current_user, 'is_admin') и current_user.is_admin()
         return redirect(url_for('admin_panel'))
     return render_template('profile.html')
 
@@ -327,7 +340,7 @@ def logout():
     return redirect("/")
 
 @app.route("/admin", methods=["GET", "POST"])
-@login_required
+@admin_required
 def admin_panel():
     form = ProductForm()
     form.category.choices = [(c.id, c.name) for c in Category.query.order_by(Category.order).all()]
@@ -378,7 +391,7 @@ def admin_panel():
     return render_template("admin_panel.html", form=form, products=products)
 
 @app.route("/admin/delete/<int:product_id>", methods=["POST"])
-@login_required
+@admin_required
 def delete_product(product_id):
     try:
         product = Product.query.get_or_404(product_id)
@@ -398,14 +411,14 @@ def delete_product(product_id):
         return redirect(url_for("admin_products"))
     return redirect(url_for("admin_products"))
 @app.route("/admin/products")
-@login_required
+@admin_required
 def admin_products():
     products = Product.query.order_by(Product.created_at.desc()).all()
     return render_template("admin_products.html", products=products)
 
 
 @app.route("/admin/edit/<int:product_id>", methods=["GET", "POST"])
-@login_required
+@admin_required
 def edit_product(product_id):
     product = Product.query.get_or_404(product_id)
     form = ProductForm(obj=product)  # заполняем форму текущими данными
@@ -434,6 +447,10 @@ def edit_product(product_id):
         flash("Товар обновлён!", "success")
         return redirect("/admin/products")
     return render_template("admin_edit.html", form=form, product=product)
+
+@app.errorhandler(403)
+def forbidden(error):
+    return render_template('403.html'), 403
 
 # ===================== КОНТЕКСТНЫЙ ПРОЦЕССОР =====================
 # Делает переменную categories доступной ВО ВСЕХ шаблонах автоматически

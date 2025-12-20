@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Доступ запрещён — Шиповник{% endblock %}
+
+{% block content %}
+<section class="error-section">
+    <div class="container">
+        <div class="error-content">
+            <h1 class="error-title">Ошибка 403</h1>
+            <p class="error-message">
+                Извините, у вас нет прав для доступа к этой странице.
+            </p>
+            <p class="error-hint">
+                Возможно, вы ввели неправильный адрес или пытаетесь зайти в раздел для администратора.
+            </p>
+            <a href="{{ url_for('index') }}" class="btn btn--primary">
+                ← Вернуться на главную
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
