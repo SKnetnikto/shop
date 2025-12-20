@@ -6,13 +6,25 @@
 <!-- ====================== HERO КАТАЛОГА ====================== -->
 <section class="catalog-hero">
     <div class="container">
-        {% if novelties %}
-        <h1 class="catalog-hero__title">Новинки</h1>
-        <p class="catalog-hero__subtitle">Последние добавленные товары</p>
-        {% else %}
-        <h1 class="catalog-hero__title">Каталог</h1>
-        <p class="catalog-hero__subtitle">Более 500 моделей с любовью для тебя ♡</p>
-        {% endif %}
+        <h1 class="catalog-hero__title">
+            {% if current_category %}
+                {{ current_category.name }}
+            {% elif novelties %}
+                Новинки
+            {% else %}
+                Каталог
+            {% endif %}
+        </h1>
+
+        <p class="catalog-hero__subtitle">
+            {% if current_category %}
+                Товары из категории «{{ current_category.name }}» с любовью для тебя ♡
+            {% elif novelties %}
+                Последние добавленные товары
+            {% else %}
+                Более 500 моделей с любовью для тебя ♡
+            {% endif %}
+        </p>
     </div>
 </section>
 

@@ -161,50 +161,9 @@ def index():
 
 @app.route("/catalog")
 def catalog():
-    # Загружаем все категории для бокового меню
     categories = Category.query.order_by(Category.order).all()
-
-    # Получаем параметры из URL
-    category_slug = request.args.get('category')
-    show_new = request.args.get('new') == 'true'
-    show_sale = request.args.get('sale') == 'true'
-
-    # Начинаем базовый запрос
-    query = Product.query
-
-    # Фильтр по категории
-    if category_slug:
-        category = Category.query.filter_by(slug=category_slug).first_or_404()
-        query = query.filter_by(category_id=category.id)
-        current_category = category
-    else:
-        current_category = None
-
-    # Фильтр "Новинки"
-    if show_new:
-        query = query.filter_by(is_new=True)
-
-    # Фильтр "Распродажа"
-    if show_sale:
-        query = query.filter_by(is_sale=True)
-
-    # Сортировка: сначала по новизне (если включён фильтр new), иначе по дате добавления
-    if show_new:
-        query = query.order_by(Product.created_at.desc())
-    else:
-        query = query.order_by(Product.created_at.desc())
-
-    # Выполняем запрос
-    products = query.all()
-
-    # Передаём в шаблон
-    return render_template(
-        "catalog.html",
-        categories=categories,
-        products=products,
-        current_category=current_category,  # можно использовать в шаблоне, если захочешь
-        novelties=show_new  # у тебя уже есть это условие в hero-секции
-    )
+    products = Product.query.order_by(Product.created_at.desc()).all()
+    return render_template("catalog.html", categories=categories, products=products)
 
 
 @app.route('/novelties')
@@ -234,43 +193,16 @@ def register():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('index'))  # Всех на главную, не в админку!
-    
-    form = UserLoginForm()
-    
-    if form.validate_on_submit():
-        username = (form.username.data or '').strip()
-        
-        admin = Admin.query.filter_by(username=username).first()
-        if admin and admin.check_password(form.password.data):
-            login_user(admin, remember=True)
-            return redirect("/admin")  # Только админа в админку
-        
-        user = User.query.filter(or_(User.username == username, User.email == username)).first()
-        if user and user.check_password(form.password.data):
-            login_user(user, remember=True)
-            return redirect(url_for('index'))  # Обычного пользователя на главную
-        
-        flash('Неверный логин или пароль', 'error')
-    
-    return render_template('login.html', form=form)
-
-
-
-
-"""@app.route("/login", methods=["GET", "POST"])
-def login():
-    if current_user.is_authenticated:
         if isinstance(current_user, Admin):
             return redirect("/admin")
         return redirect(url_for('index'))
-        
+
     form = UserLoginForm()  # Используем UserLoginForm вместо LoginForm
     ip = request.remote_addr or 'unknown'
-    
+
     if form.validate_on_submit():
         username = (form.username.data or '').strip()
-        
+
         # Проверяем блокировку
         ip_key = f"ip:{ip}"
         user_key = f"user:{username}"
@@ -283,14 +215,14 @@ def login():
         user = Admin.query.filter_by(username=username).first()
         if not user:
             user = User.query.filter(or_(User.username == username, User.email == username)).first()
-            
+
         if user and user.check_password(form.password.data):
             # успешный вход — очищаем счётчики
             with _attempts_lock:
                 _login_attempts.pop(ip_key, None)
                 _login_attempts.pop(user_key, None)
             login_user(user, remember=True)
-            
+
             if isinstance(user, Admin):
                 return redirect("/admin")
             return redirect(url_for('index'))
@@ -302,13 +234,14 @@ def login():
             max(0, LOGIN_MAX_ATTEMPTS - _prune_attempts(ip_key)),
             max(0, LOGIN_MAX_ATTEMPTS - _prune_attempts(user_key))
         )
-        
+
         if attempts_left <= 0:
             flash("Слишком много попыток входа. Попробуйте позже.", "error")
         else:
             flash(f"Неверный логин или пароль. Осталось попыток: {attempts_left}", "error")
-            
-    return render_template("login.html", form=form)"""
+
+    return render_template("login.html", form=form)
+
 
 @app.route("/profile")
 @login_required
@@ -319,13 +252,11 @@ def profile():
 
 
 
-
 @app.route("/logout")
 @login_required
 def logout():
     logout_user()
-    return redirect("/")
-
+    return redirect("/admin")
 @app.route("/admin", methods=["GET", "POST"])
 @login_required
 def admin_panel():
@@ -344,12 +275,12 @@ def admin_panel():
             image_filename = "placeholder.jpg"  # если фото не выбрано
 
         print("Создаем объект товара")
-        
+
         # Получаем данные из формы, с запасными значениями для обязательных полей
         title = form.title.data or "Без названия"
         price = form.price.data or 0
         category_id = form.category.data or 1  # ID первой категории
-        
+
         product = Product(
             title=title,
             price=price,
@@ -413,7 +344,7 @@ def edit_product(product_id):
 
     if form.validate_on_submit():
         old_image = product.image  # запоминаем старо
-       
+
         # Если загружено новое фото — обрабатываем, иначе оставляем старое
         if form.image.data:
             image_filename = process_product_image(form.image.data, delete_old_image=old_image)
@@ -429,7 +360,7 @@ def edit_product(product_id):
         product.is_new = form.is_new.data
         product.is_sale = form.is_sale.data
         product.sizes = form.sizes.data
-    
+
         db.session.commit()
         flash("Товар обновлён!", "success")
         return redirect("/admin/products")
@@ -449,87 +380,9 @@ def inject_categories():
 
 # ===================== КОРЗИНА =====================
 @app.route("/cart")
-@login_required
 def cart():
-    # Получаем все товары пользователя из корзины
-    cart_items = CartItem.query.filter_by(user_id=current_user.id).all()
-
-    # Если корзина пуста, показываем пустую корзину
-    if not cart_items:
-        return render_template("cart.html", cart_items=[], total=0)
-
-    # Рассчитываем общую сумму
-    total = sum(item.product.price * item.quantity for item in cart_items)
-
-    return render_template("cart.html", cart_items=cart_items, total=total)
-
-@app.route("/cart/add/<int:product_id>", methods=["POST"])
-@login_required
-def add_to_cart(product_id):
-    product = Product.query.get_or_404(product_id)
-
-    # Проверяем, есть ли товар уже в корзине
-    cart_item = CartItem.query.filter_by(
-        user_id=current_user.id, 
-        product_id=product_id
-    ).first()
-
-    if cart_item:
-        # Если товар уже в корзине, увеличиваем количество
-        cart_item.quantity += 1
-    else:
-        # Если товара нет в корзине, добавляем его
-        cart_item = CartItem(
-            user_id=current_user.id,
-            product_id=product_id,
-            quantity=1
-        )
-        db.session.add(cart_item)
-
-    db.session.commit()
-    flash(f"Товар «{product.title}» добавлен в корзину", "success")
-    return redirect(url_for("cart"))
-
-@app.route("/cart/update/<int:cart_item_id>", methods=["POST"])
-@login_required
-def update_cart_item(cart_item_id):
-    cart_item = CartItem.query.get_or_404(cart_item_id)
-
-    # Проверяем, что товар принадлежит текущему пользователю
-    if cart_item.user_id != current_user.id:
-        flash("У вас нет прав на изменение этой корзины", "error")
-        return redirect(url_for("cart"))
-
-    # Получаем новое количество из формы
-    quantity = int(request.form.get("quantity", 1))
-
-    if quantity <= 0:
-        # Если количество 0 или меньше, удаляем товар из корзины
-        db.session.delete(cart_item)
-        flash("Товар удален из корзины", "info")
-    else:
-        # Иначе обновляем количество
-        cart_item.quantity = quantity
-        flash("Количество товара обновлено", "success")
-
-    db.session.commit()
-    return redirect(url_for("cart"))
-
-@app.route("/cart/remove/<int:cart_item_id>", methods=["POST"])
-@login_required
-def remove_from_cart(cart_item_id):
-    cart_item = CartItem.query.get_or_404(cart_item_id)
-
-    # Проверяем, что товар принадлежит текущему пользователю
-    if cart_item.user_id != current_user.id:
-        flash("У вас нет прав на удаление из этой корзины", "error")
-        return redirect(url_for("cart"))
-
-    product_title = cart_item.product.title
-    db.session.delete(cart_item)
-    db.session.commit()
-    flash(f"Товар «{product_title}» удален из корзины", "info")
-    return redirect(url_for("cart"))
+    # Возвращаем шаблон корзины (пока пустой)
+    return render_template("cart.html")
 
 # ===================== ПОИСК =====================
 @app.route('/search')
