@@ -80,6 +80,27 @@
     </div>
 </header>
 
+</header>
+
+<!-- Блок для flash-сообщений -->
+<div class="container flashes-container" style="margin-top: 20px;">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flashes">
+                {% for category, message in messages %}
+                    <div class="flash flash--{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+</div>
+
+
+
+<main class="main">
+
 <main class="main">
     {% block content %}{% endblock %}
 </main>

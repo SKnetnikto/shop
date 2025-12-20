@@ -485,49 +485,47 @@ def cart():
 def add_to_cart(product_id):
     product = Product.query.get_or_404(product_id)
 
-    # Проверяем, есть ли товар уже в корзине
     cart_item = CartItem.query.filter_by(
         user_id=current_user.id, 
         product_id=product_id
     ).first()
 
     if cart_item:
-        # Если товар уже в корзине, увеличиваем количество
+        # Товар уже есть — увеличиваем количество и показываем сообщение
         cart_item.quantity += 1
+        db.session.commit()
+        flash(f"Товар «{product.title}» уже в корзине. Количество увеличено до {cart_item.quantity} шт.", "info")
     else:
-        # Если товара нет в корзине, добавляем его
+        # Новый товар
         cart_item = CartItem(
             user_id=current_user.id,
             product_id=product_id,
             quantity=1
         )
         db.session.add(cart_item)
+        db.session.commit()
+        flash(f"Товар «{product.title}» добавлен в корзину!", "success")
 
-    db.session.commit()
-    flash(f"Товар «{product.title}» добавлен в корзину", "success")
-    return redirect(url_for("cart"))
+    # Остаёмся на той же странице (каталог, новинки и т.д.)
+    return redirect(request.referrer or url_for('catalog'))
 
 @app.route("/cart/update/<int:cart_item_id>", methods=["POST"])
 @login_required
 def update_cart_item(cart_item_id):
     cart_item = CartItem.query.get_or_404(cart_item_id)
 
-    # Проверяем, что товар принадлежит текущему пользователю
     if cart_item.user_id != current_user.id:
         flash("У вас нет прав на изменение этой корзины", "error")
         return redirect(url_for("cart"))
 
-    # Получаем новое количество из формы
     quantity = int(request.form.get("quantity", 1))
 
     if quantity <= 0:
-        # Если количество 0 или меньше, удаляем товар из корзины
         db.session.delete(cart_item)
-        flash("Товар удален из корзины", "info")
+        flash(f"Товар «{cart_item.product.title}» удалён из корзины", "info")
     else:
-        # Иначе обновляем количество
         cart_item.quantity = quantity
-        flash("Количество товара обновлено", "success")
+        flash(f"Количество обновлено: {quantity} шт.", "success")
 
     db.session.commit()
     return redirect(url_for("cart"))

@@ -88,19 +88,30 @@
 
                         <div class="product-card__info">
                             <h3 class="product-card__title">{{ product.title }}</h3>
-                            {% if product.sizes %}
+                             {% if product.sizes %}
                                 <div class="product-card__sizes">
-                                    Размеры: {{ product.sizes }}
-                                </div>
+                                     Размеры: {{ product.sizes }}
+                               </div>
                             {% endif %}
-                            <div class="product-card__price">
-                                <span class="price-current">{{ product.price }} ₽</span>
-                                {% if product.old_price %}
-                                    <span class="price-old">{{ product.old_price }} ₽</span>
-                                {% endif %}
-                            </div>
-                            <a href="#" class="btn btn--small">Подробнее</a>
+                             <div class="product-card__price">
+                                 <span class="price-current">{{ product.price }} ₽</span>
+                                    {% if product.old_price %}
+                             <span class="price-old">{{ product.old_price }} ₽</span>
+                            {% endif %}
                         </div>
+
+    
+            <!-- Кнопка "Добавить в корзину" — компактная и красивая -->
+                            <div style="text-align: center; margin-top: 16px;">
+                                <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="POST" style="display: inline-block;">
+                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                      <button type="submit" class="btn btn--primary" style="padding: 12px 32px; font-size: 1.1rem; font-weight: 600;">
+                                            Добавить в корзину
+                                     </button>
+                                 </form>
+                            </div>
+
+
                     </article>
                     {% endfor %}
                 {% endif %}

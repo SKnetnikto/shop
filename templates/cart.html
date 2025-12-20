@@ -28,17 +28,20 @@
 
                         <!-- Количество -->
                         <div class="quantity-wrapper" style="margin: 20px 0; text-align: center;">
-                            <form action="{{ url_for('update_cart_item', cart_item_id=item.id) }}" method="POST" class="quantity-form">
-                                <button type="button" class="quantity-btn minus">-</button>
-                                <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="quantity-input">
-                                <button type="button" class="quantity-btn plus">+</button>
+                            <!-- Форма изменения количества с CSRF и удалением при 0 -->
+                             <form action="{{ url_for('update_cart_item', cart_item_id=item.id) }}" method="POST" class="quantity-form">
+                               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                               <button type="button" class="quantity-btn minus">-</button>
+                               <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="quantity-input">
+                              <button type="button" class="quantity-btn plus">+</button>
                             </form>
                             <p style="margin-top: 10px; font-weight: 700;">Итого: {{ (item.quantity * item.product.price)|int }} ₽</p>
                         </div>
 
                         <!-- Удаление -->
                         <form action="{{ url_for('remove_from_cart', cart_item_id=item.id) }}" method="POST" style="position: absolute; top: 20px; right: 20px;">
-                            <button type="submit" style="background:none; border:none; font-size:1.8rem; color:#ff2e63; cursor:pointer;">✕</button>
+                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                             <button type="submit" style="background:none; border:none; font-size:1.8rem; color:#ff2e63; cursor:pointer;">✕</button>
                         </form>
                     </div>
                 </article>
