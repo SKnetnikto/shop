@@ -1,4 +1,4 @@
-<div class="product-card" onclick="openProductModal({{ product.id }}, '{{ product.title|e }}', '{{ get_image_path(product.image, 'medium')|e }}', '{{ get_image_path(product.image, 'full')|e }}', {{ product.price }}, {{ product.old_price or 'null' }}, '{{ product.description|e }}', '{{ product.brand|e }}', '{{ product.sizes|e }}', {{ product.discount_percent }}, {{ product.is_new|lower }}, {{ product.is_sale|lower }})">
+<div class="product-card" onclick="openProductModal({{ product.id }}, '{{ product.title|e }}', '{{ get_image_path(product.image, 'medium')|e }}', '{{ get_image_path(product.image, 'full')|e }}', {{ product.price }}, {{ product.old_price or 'null' }}, '{{ product.description|e }}', '{{ product.brand|e }}', '{{ product.sizes|e }}', {{ product.discount_percent }}, {{ product.is_new|lower }}, {{ product.is_sale|lower }});">
     <div class="product-image">
         <img src="{{ url_for('static', filename='images/products/' + get_image_path(product.image, 'medium')) }}"
              alt="{{ product.title }}"
@@ -11,6 +11,21 @@
             <span class="badge sale">Распродажа</span>
         {% endif %}
     </div>
+
+    {% if product.sizes %}
+    <div class="size-selector" style="padding: 10px; text-align: center; border-bottom: 1px solid #eee;" onclick="event.stopPropagation();">
+        <label style="display: block; margin-bottom: 5px; font-size: 0.9rem; color: #555;">Выберите размер:</label>
+        <div style="display: flex; flex-wrap: wrap; gap: 5px; justify-content: center;">
+            {% for size in product.sizes.split(',') %}
+                {% set clean_size = size.strip() %}
+                <label class="size-option" style="display: inline-block; padding: 5px 10px; border: 2px solid #ddd; border-radius: 15px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;">
+                    <input type="radio" name="size_{{ product.id }}" value="{{ clean_size }}" style="display: none;" onchange="updateAddToCartForm(this, {{ product.id }})">
+                    {{ clean_size }}
+                </label>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 
     <div class="product-info" onclick="event.stopPropagation();">
         <h3 class="product-title">{{ product.title }}</h3>
@@ -40,12 +55,13 @@
             {% endif %}
         </div>
 
-        <div class="product-actions" onclick="event.stopPropagation();">
-            <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="POST" style="width: 100%;">
+        <div class="product-actions" style="display: flex; gap: 10px;" onclick="event.stopPropagation();">
+            <form id="add-to-cart-form-{{ product.id }}" action="{{ url_for('add_to_cart', product_id=product.id) }}" method="POST" style="flex: 1;">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn btn-primary">В корзину</button>
+                <input type="hidden" name="size" id="selected-size-{{ product.id }}" value="">
+                <button type="submit" class="btn btn-primary" style="width: 100%;" {% if product.sizes %}disabled onclick="alert('Пожалуйста, выберите размер'); return false;"{% endif %}>В корзину</button>
             </form>
-            <a href="{{ url_for('product', product_id=product.id) }}" class="btn btn-secondary" onclick="event.stopPropagation();">Подробнее</a>
+            <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="openProductModal({{ product.id }}, '{{ product.title|e }}', '{{ get_image_path(product.image, 'medium')|e }}', '{{ get_image_path(product.image, 'full')|e }}', {{ product.price }}, {{ product.old_price or 'null' }}, '{{ product.description|e }}', '{{ product.brand|e }}', '{{ product.sizes|e }}', {{ product.discount_percent }}, {{ product.is_new|lower }}, {{ product.is_sale|lower }}); event.stopPropagation();">Подробнее</button>
         </div>
     </div>
 </div>

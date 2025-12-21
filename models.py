@@ -96,6 +96,7 @@ class CartItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    size = db.Column(db.String(20), nullable=True)  # Размер товара
     quantity = db.Column(db.Integer, default=1, nullable=False)
     added_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -103,7 +104,7 @@ class CartItem(db.Model):
     product = db.relationship('Product', backref='cart_items', lazy=True)
 
     def __repr__(self):
-        return f"<CartItem User:{self.user_id} Product:{self.product_id}>"
+        return f"<CartItem User:{self.user_id} Product:{self.product_id} Size:{self.size}>"
 
 
 class Product(db.Model):

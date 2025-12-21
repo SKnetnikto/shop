@@ -71,22 +71,38 @@
                 {% endif %}
                 
                 <div class="product-actions" style="margin-top: 40px;">
+                    {% if product.sizes %}
+                    <div class="size-selector-detail" style="margin-bottom: 20px; text-align: center;">
+                        <label style="display: block; margin-bottom: 10px; font-size: 1.1rem; color: #555; font-weight: 600;">Выберите размер:</label>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+                            {% for size in product.sizes.split(',') %}
+                                {% set clean_size = size.strip() %}
+                                <label class="size-option-detail" style="display: inline-block; padding: 10px 16px; border: 2px solid #ddd; border-radius: 20px; font-size: 1rem; cursor: pointer; transition: all 0.2s;">
+                                    <input type="radio" name="detail_size" value="{{ clean_size }}" style="display: none;" onchange="updateDetailAddToCartForm(this)">
+                                    {{ clean_size }}
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
                     {% if current_user.is_authenticated %}
-                        <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="POST" style="margin-bottom: 15px;">
+                        <form id="detail-add-to-cart-form" action="{{ url_for('add_to_cart', product_id=product.id) }}" method="POST" style="margin-bottom: 15px;">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" 
-                                    style="width: 100%; padding: 20px; background: #ff2e63; color: white; border: none; border-radius: 16px; font-size: 1.3rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                            <input type="hidden" name="size" id="detail-selected-size" value="">
+                            <button type="submit"
+                                    style="width: 100%; padding: 20px; background: #ff2e63; color: white; border: none; border-radius: 16px; font-size: 1.3rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;"
+                                    {% if product.sizes %}disabled onclick="alert('Пожалуйста, выберите размер'); return false;"{% endif %}>
                                 Добавить в корзину
                             </button>
                         </form>
                     {% else %}
-                        <a href="{{ url_for('login') }}" 
+                        <a href="{{ url_for('login') }}"
                            style="display: block; width: 100%; padding: 20px; background: #ff2e63; color: white; text-align: center; text-decoration: none; border-radius: 16px; font-size: 1.3rem; font-weight: 600; margin-bottom: 15px;">
                             Войти, чтобы купить
                         </a>
                     {% endif %}
-                    
-                    <a href="{{ url_for('catalog') }}" 
+
+                    <a href="{{ url_for('catalog') }}"
                        style="display: block; width: 100%; padding: 20px; background: #f0f0f0; color: #333; text-align: center; text-decoration: none; border-radius: 16px; font-size: 1.3rem; font-weight: 600;">
                         ← Назад в каталог
                     </a>
@@ -95,4 +111,33 @@
         </div>
     </div>
 </section>
+
+<script>
+    // Функция для обновления формы добавления в корзину на странице деталей
+    function updateDetailAddToCartForm(radioElement) {
+        const selectedSizeInput = document.getElementById('detail-selected-size');
+        if (selectedSizeInput) {
+            selectedSizeInput.value = radioElement.value;
+        }
+
+        // Активируем кнопку "Добавить в корзину" на странице деталей
+        const detailAddToCartButton = document.querySelector('#detail-add-to-cart-form button[type="submit"]');
+        if (detailAddToCartButton) {
+            detailAddToCartButton.disabled = false;
+            detailAddToCartButton.onclick = null;
+            detailAddToCartButton.style.opacity = '1';
+            detailAddToCartButton.style.cursor = 'pointer';
+        }
+
+        // Визуальное выделение выбранного размера
+        const sizeOptions = radioElement.closest('.size-selector-detail').querySelectorAll('.size-option-detail');
+        sizeOptions.forEach(option => {
+            option.style.borderColor = '#ddd';
+            option.style.backgroundColor = 'transparent';
+        });
+
+        radioElement.closest('.size-option-detail').style.borderColor = '#ff2e63';
+        radioElement.closest('.size-option-detail').style.backgroundColor = '#fff5f9';
+    }
+</script>
 {% endblock %}

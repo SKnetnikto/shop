@@ -33,40 +33,6 @@
     <div class="container">
         <div class="catalog__inner">
 
-            <!-- Боковая панель с категориями (на мобильных — сверху) -->
-            {% if not request.args.get('category') %}
-            <aside class="sidebar">
-                <h3 class="sidebar__title">Категории</h3>
-                <ul class="category-list">
-                    <!-- Все категории из базы -->
-                    {% for cat in categories %}
-                    <li class="category-item">
-                                {# Ссылка на категорию: сохраняем текущие быстрые фильтры (new, sale) #}
-                                <a href="{{ url_for('catalog') }}?category={{ cat.slug }}{% if request.args.get('new') %}&amp;new={{ request.args.get('new') }}{% endif %}{% if request.args.get('sale') %}&amp;sale={{ request.args.get('sale') }}{% endif %}"
-                                    class="category-link {% if request.args.get('category') == cat.slug %}active{% endif %}">
-                            <span class="category-icon">{{ cat.icon }}</span>
-                            {{ cat.name }}
-                            <span class="category-count">({{ cat.products|length }})</span>
-                        </a>
-                    </li>
-                    {% endfor %}
-                </ul>
-
-                <!-- Быстрые фильтры -->
-                <div class="quick-filters">
-                    {# Ссылка фильтра 'new' сохраняет выбранную категорию, если есть #}
-                    <a href="{{ url_for('catalog') }}{% if request.args.get('category') %}?category={{ request.args.get('category') }}&amp;new=true{% else %}?new=true{% endif %}"
-                       class="quick-filter {% if request.args.get('new') %}active{% endif %}">
-                        Новинки
-                    </a>
-                    {# Ссылка фильтра 'sale' сохраняет выбранную категорию, если есть #}
-                    <a href="{{ url_for('catalog') }}{% if request.args.get('category') %}?category={{ request.args.get('category') }}&amp;sale=true{% else %}?sale=true{% endif %}"
-                       class="quick-filter {% if request.args.get('sale') %}active{% endif %}">
-                        Распродажа
-                    </a>
-                </div>
-            </aside>
-            {% endif %}
 
             <!-- Сетка товаров -->
             <div class="products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; margin-top: 20px;">

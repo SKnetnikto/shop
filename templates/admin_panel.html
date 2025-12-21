@@ -24,6 +24,7 @@
 
                 <form method="POST" enctype="multipart/form-data" novalidate>
                     {{ form.hidden_tag() }}
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                     <div class="form-grid">
 
@@ -174,9 +175,9 @@
                             <a href="{{ url_for('edit_product', product_id=product.id) }}" class="btn-edit">Редактировать</a>
                             <form method="POST" action="{{ url_for('delete_product', product_id=product.id) }}"
                                 onsubmit="return confirm('Удалить «{{ product.title }}»? Это действие нельзя отменить!')">
-                                     {{ form.hidden_tag() }}  <!-- Это автоматически добавит CSRF-токен -->
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                  <button type="submit" class="btn-delete">Удалить</button>
-                            </form>  
+                            </form>
                         </div>
                     </div>
                     {% endfor %}

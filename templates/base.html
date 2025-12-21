@@ -105,7 +105,7 @@
 <footer class="footer">
     <div class="container">
         <p>© 2025 Шиповник — одежда с душой ♡</p>
-        <p class="footer-links"><a href="/about">О нас</a></p>
+        <p class="footer-links"><a href="{{ url_for('about') }}">О нас</a></p>
     </div>
 </footer>
 
@@ -135,9 +135,15 @@
                 </div>
 
                 <div class="modal-actions">
+                    <div id="modalSizeSelectorContainer" class="modal-size-selector" style="display: none;">
+                        <label>Выберите размер:</label>
+                        <div id="modalSizeOptions" class="modal-size-options">
+                        </div>
+                    </div>
                     <form id="modalAddToCartForm" method="POST" style="width: 100%;">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit" class="modal-btn modal-btn-primary">Добавить в корзину</button>
+                        <input type="hidden" name="size" id="modalSelectedSize" value="">
+                        <button type="submit" class="modal-btn modal-btn-primary" id="modalAddToCartButton">Добавить в корзину</button>
                     </form>
                     <a id="modalProductDetailLink" href="#" class="modal-btn modal-btn-secondary">Перейти на страницу товара</a>
                 </div>
@@ -205,6 +211,58 @@
         const detailLink = document.getElementById('modalProductDetailLink');
         detailLink.href = '/product/' + id;
 
+        // Обработка размеров для модального окна
+        const sizeSelectorContainer = document.getElementById('modalSizeSelectorContainer');
+        const sizeOptionsContainer = document.getElementById('modalSizeOptions');
+
+        // Очищаем предыдущие элементы размеров
+        sizeOptionsContainer.innerHTML = '';
+
+        if (sizes && sizes !== 'null' && sizes.trim() !== '') {
+            // Отображаем контейнер выбора размера
+            sizeSelectorContainer.style.display = 'block';
+
+            // Разбиваем строку размеров и создаем элементы
+            const sizesArray = sizes.split(',');
+            sizesArray.forEach(function(size) {
+                const cleanSize = size.trim();
+                if (cleanSize) {
+                    // Создаем элемент для размера
+                    const sizeLabel = document.createElement('label');
+                    sizeLabel.className = 'modal-size-option';
+                    sizeLabel.style.cssText = 'display: inline-block; padding: 6px 12px; border: 2px solid #ddd; border-radius: 18px; font-size: 0.9rem; cursor: pointer; transition: all 0.2s;';
+
+                    const sizeInput = document.createElement('input');
+                    sizeInput.type = 'radio';
+                    sizeInput.name = 'modal_size';
+                    sizeInput.value = cleanSize;
+                    sizeInput.style.cssText = 'display: none;';
+                    sizeInput.onchange = function() { updateModalAddToCartForm(this); };
+
+                    sizeLabel.appendChild(sizeInput);
+                    sizeLabel.appendChild(document.createTextNode(cleanSize));
+
+                    sizeOptionsContainer.appendChild(sizeLabel);
+                }
+            });
+
+            // Отключаем кнопку "Добавить в корзину" до выбора размера
+            const modalAddToCartButton = document.getElementById('modalAddToCartButton');
+            modalAddToCartButton.disabled = true;
+            modalAddToCartButton.style.opacity = '0.6';
+            modalAddToCartButton.style.cursor = 'not-allowed';
+            modalAddToCartButton.onclick = function() { alert('Пожалуйста, выберите размер'); return false; };
+        } else {
+            // Если размеры не указаны, скрываем контейнер и включаем кнопку
+            sizeSelectorContainer.style.display = 'none';
+
+            const modalAddToCartButton = document.getElementById('modalAddToCartButton');
+            modalAddToCartButton.disabled = false;
+            modalAddToCartButton.style.opacity = '1';
+            modalAddToCartButton.style.cursor = 'pointer';
+            modalAddToCartButton.onclick = null;
+        }
+
         // Показываем модальное окно
         document.getElementById('productModal').style.display = 'block';
 
@@ -231,6 +289,134 @@
             closeProductModal();
         }
     });
+
+    // Мобильное меню
+    document.addEventListener('DOMContentLoaded', function() {
+        const burger = document.querySelector('.burger');
+        const nav = document.querySelector('.nav');
+        const navList = document.querySelector('.nav__list');
+
+        if (burger && nav) {
+            burger.addEventListener('click', function() {
+                burger.classList.toggle('active');
+                nav.classList.toggle('active');
+
+                // Закрываем выпадающее меню при открытии/закрытии мобильного меню
+                const dropdown = document.querySelector('.nav__dropdown .dropdown');
+                if (dropdown) {
+                    dropdown.classList.remove('active');
+                }
+            });
+
+            // Закрываем мобильное меню при клике на ссылку
+            const navLinks = document.querySelectorAll('.nav__list a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    burger.classList.remove('active');
+                    nav.classList.remove('active');
+
+                    // Также закрываем выпадающие меню
+                    const dropdown = document.querySelector('.nav__dropdown .dropdown');
+                    if (dropdown) {
+                        dropdown.classList.remove('active');
+                    }
+                });
+            });
+        }
+
+        // Обработка выпадающего меню каталога на мобильных устройствах
+        const catalogLink = document.querySelector('.nav__dropdown > a');
+        if (catalogLink) {
+            catalogLink.addEventListener('click', function(e) {
+                // Проверяем, находимся ли мы на мобильном устройстве
+                if (window.innerWidth <= 992) {
+                    e.preventDefault();
+                    const dropdown = this.nextElementSibling;
+                    if (dropdown) {
+                        dropdown.classList.toggle('active');
+                    }
+                }
+            });
+        }
+
+        // Закрытие меню при изменении размера окна
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 992) {
+                nav.classList.remove('active');
+                burger.classList.remove('active');
+                const dropdown = document.querySelector('.nav__dropdown .dropdown');
+                if (dropdown) {
+                    dropdown.classList.remove('active');
+                }
+            }
+        });
+    });
+
+    // Функция для обновления формы добавления в корзину при выборе размера
+    function updateAddToCartForm(radioElement, productId) {
+        const selectedSizeInput = document.getElementById('selected-size-' + productId);
+        if (selectedSizeInput) {
+            selectedSizeInput.value = radioElement.value;
+        }
+
+        // Активируем кнопку "В корзину" и убираем обработчик onclick
+        const addToCartButton = document.querySelector('#add-to-cart-form-' + productId + ' button[type="submit"]');
+        if (addToCartButton) {
+            addToCartButton.disabled = false;
+            addToCartButton.onclick = null;
+            addToCartButton.style.opacity = '1';
+            addToCartButton.style.cursor = 'pointer';
+        }
+
+        // Визуальное выделение выбранного размера
+        const sizeOptions = radioElement.closest('.size-selector').querySelectorAll('.size-option');
+        sizeOptions.forEach(option => {
+            option.style.borderColor = '#ddd';
+            option.style.backgroundColor = 'transparent';
+        });
+
+        radioElement.closest('.size-option').style.borderColor = '#ff2e63';
+        radioElement.closest('.size-option').style.backgroundColor = '#fff5f9';
+    }
+
+    // Функция для обновления формы добавления в корзину в модальном окне
+    function updateModalAddToCartForm(radioElement) {
+        const selectedSizeInput = document.getElementById('modalSelectedSize');
+        if (selectedSizeInput) {
+            selectedSizeInput.value = radioElement.value;
+        }
+
+        // Активируем кнопку "Добавить в корзину" в модальном окне
+        const modalAddToCartButton = document.getElementById('modalAddToCartButton');
+        if (modalAddToCartButton) {
+            modalAddToCartButton.disabled = false;
+            modalAddToCartButton.onclick = null;
+            modalAddToCartButton.style.opacity = '1';
+            modalAddToCartButton.style.cursor = 'pointer';
+        }
+
+        // Визуальное выделение выбранного размера
+        const sizeOptions = radioElement.closest('.modal-size-selector').querySelectorAll('.modal-size-option');
+        if (sizeOptions.length > 0) {
+            sizeOptions.forEach(option => {
+                option.style.borderColor = '#ddd';
+                option.style.backgroundColor = 'transparent';
+            });
+
+            radioElement.closest('.modal-size-option').style.borderColor = '#ff2e63';
+            radioElement.closest('.modal-size-option').style.backgroundColor = '#fff5f9';
+        } else {
+            // Если элементы размеров не найдены через closest, ищем в контейнере
+            const allSizeOptions = document.querySelectorAll('#modalSizeOptions .modal-size-option');
+            allSizeOptions.forEach(option => {
+                option.style.borderColor = '#ddd';
+                option.style.backgroundColor = 'transparent';
+            });
+
+            radioElement.closest('.modal-size-option').style.borderColor = '#ff2e63';
+            radioElement.closest('.modal-size-option').style.backgroundColor = '#fff5f9';
+        }
+    }
 </script>
 
 </body>

@@ -21,8 +21,11 @@
 
                     <div class="product-card__info">
                         <h3 class="product-card__title">{{ item.product.title }}</h3>
+                        {% if item.size %}
+                            <div class="product-card__size">Размер: {{ item.size }}</div>
+                        {% endif %}
                         {% if item.product.sizes %}
-                            <div class="product-card__sizes">Размеры: {{ item.product.sizes }}</div>
+                            <div class="product-card__available-sizes">Доступные размеры: {{ item.product.sizes }}</div>
                         {% endif %}
                         <span style="font-size: 1.6rem; color: #ff2e63; font-weight: 700;">{{ item.product.price }} ₽</span>
 

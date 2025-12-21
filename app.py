@@ -491,26 +491,45 @@ def cart():
 def add_to_cart(product_id):
     product = Product.query.get_or_404(product_id)
 
+    # Получаем размер из формы
+    size = request.form.get('size') if request.method == 'POST' else None
+
+    # Проверяем, что если у товара есть размеры, то пользователь выбрал один из них
+    if product.sizes:  # Если у товара есть доступные размеры
+        if not size:  # Если размер не выбран
+            flash(f"Пожалуйста, выберите размер для товара «{product.title}»", "error")
+            return redirect(request.referrer or url_for('catalog'))
+
+        # Проверяем, что размер доступен для этого товара
+        available_sizes = [s.strip() for s in product.sizes.split(',')]
+        if size not in available_sizes:
+            flash(f"Размер {size} недоступен для этого товара", "error")
+            return redirect(request.referrer or url_for('catalog'))
+
     cart_item = CartItem.query.filter_by(
         user_id=current_user.id,
-        product_id=product_id
+        product_id=product_id,
+        size=size
     ).first()
 
     if cart_item:
         # Товар уже есть — увеличиваем количество и показываем сообщение
         cart_item.quantity += 1
         db.session.commit()
-        flash(f"Товар «{product.title}» уже в корзине. Количество увеличено до {cart_item.quantity} шт.", "info")
+        size_text = f" (размер {size})" if size else ""
+        flash(f"Товар «{product.title}»{size_text} уже в корзине. Количество увеличено до {cart_item.quantity} шт.", "info")
     else:
         # Новый товар
         cart_item = CartItem(
             user_id=current_user.id,
             product_id=product_id,
+            size=size,
             quantity=1
         )
         db.session.add(cart_item)
         db.session.commit()
-        flash(f"Товар «{product.title}» добавлен в корзину!", "success")
+        size_text = f" (размер {size})" if size else ""
+        flash(f"Товар «{product.title}»{size_text} добавлен в корзину!", "success")
 
     # Остаёмся на той же странице (каталог, новинки и т.д.)
     return redirect(request.referrer or url_for('catalog'))
@@ -527,11 +546,13 @@ def update_cart_item(cart_item_id):
     quantity = int(request.form.get("quantity", 1))
 
     if quantity <= 0:
+        size_text = f" (размер {cart_item.size})" if cart_item.size else ""
         db.session.delete(cart_item)
-        flash(f"Товар «{cart_item.product.title}» удалён из корзины", "info")
+        flash(f"Товар «{cart_item.product.title}»{size_text} удалён из корзины", "info")
     else:
         cart_item.quantity = quantity
-        flash(f"Количество обновлено: {quantity} шт.", "success")
+        size_text = f" (размер {cart_item.size})" if cart_item.size else ""
+        flash(f"Количество товара «{cart_item.product.title}»{size_text} обновлено: {quantity} шт.", "success")
 
     db.session.commit()
     return redirect(url_for("cart"))
@@ -547,9 +568,10 @@ def remove_from_cart(cart_item_id):
         return redirect(url_for("cart"))
 
     product_title = cart_item.product.title
+    size_text = f" (размер {cart_item.size})" if cart_item.size else ""
     db.session.delete(cart_item)
     db.session.commit()
-    flash(f"Товар «{product_title}» удален из корзины", "info")
+    flash(f"Товар «{product_title}»{size_text} удален из корзины", "info")
     return redirect(url_for("cart"))
 
 # ===================== ПОИСК =====================
@@ -609,10 +631,30 @@ def product(product_id):
     product = Product.query.get_or_404(product_id)
     return render_template('product_detail.html', product=product)
 
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
 #                         ===================== ЗАПУСК =====================
 if __name__ == "__main__":
     with app.app_context():
+        # Создаем все таблицы
         db.create_all()
+
+        # Проверяем и добавляем недостающий столбец size в таблицу cart_item
+        try:
+            # Проверяем, существует ли столбец size
+            result = db.session.execute(db.text("PRAGMA table_info(cart_item)")).fetchall()
+            column_names = [row[1] for row in result]
+
+            if 'size' not in column_names:
+                # Добавляем столбец size
+                db.session.execute(db.text("ALTER TABLE cart_item ADD COLUMN size VARCHAR(20)"))
+                db.session.commit()
+                print("Добавлен столбец size в таблицу cart_item")
+        except Exception as e:
+            print(f"Ошибка при добавлении столбца: {e}")
+            db.session.rollback()
 
         # Проверка наличия placeholder изображения — удобная подсказка при разработке
         placeholder_path = os.path.join(basedir, 'static', 'images', 'placeholder.jpg')
