@@ -1,35 +1,42 @@
 {% extends "base.html" %}
-{% block title %}Результаты поиска — Шиповник{% endblock %}
+{% block title %}Поиск — «{{ q }}»{% endblock %}
 
 {% block content %}
-<section class="search-results">
+<section class="catalog" style="padding: 60px 0;">
     <div class="container">
-        <h1>Результаты поиска{% if q %} — «{{ q }}"{% endif %}</h1>
-        <p class="muted">Найдено: {{ products|length }}</p>
-
-        <div class="products-grid">
-            {% if products|length == 0 %}
-                <p>По вашему запросу ничего не найдено.</p>
+        <h1 style="font-size: 2.8rem; text-align: center; margin-bottom: 40px; color: #ff2e63; font-weight: 800;">
+            {% if q %}
+                Результаты поиска: «<span style="color: #333;">{{ q }}</span>»
             {% else %}
-                {% for product in products %}
-                    <article class="product-card">
-                        <div class="product-card__image">
-                            <img src="{{ url_for('static', filename='images/products/' + product.image) }}"
-                                 alt="{{ product.title }}"
-                                 data-placeholder="{{ url_for('static', filename='images/placeholder.png') }}"
-                                 onerror="this.src=this.dataset.placeholder">
-                        </div>
-                        <div class="product-card__info">
-                            <h3 class="product-card__title">{{ product.title }}</h3>
-                            <div class="product-card__price">
-                                <span class="price-current">{{ product.price }} ₽</span>
-                            </div>
-                            <p class="muted small">{{ product.category.name }} • {{ product.brand or '' }}</p>
-                        </div>
-                    </article>
-                {% endfor %}
+                Поиск товаров
             {% endif %}
-        </div>
+        </h1>
+
+        {% if products %}
+            <div class="products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; margin-top: 20px;">
+                {% for product in products %}
+                    {% include 'product_card.html' %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 80px 20px;">
+                {% if q %}
+                    <div style="font-size: 6rem; margin-bottom: 20px;">🔍</div>
+                    <h2 style="font-size: 2.2rem; color: #ff2e63; margin-bottom: 15px;">Ничего не найдено</h2>
+                    <p style="font-size: 1.4rem; color: #777; max-width: 600px; margin: 0 auto;">
+                        По запросу «<strong>{{ q }}</strong>» товаров нет. Попробуйте изменить запрос.
+                    </p>
+                {% else %}
+                    <p style="font-size: 1.4rem; color: #777;">Введите поисковый запрос выше.</p>
+                {% endif %}
+                <div style="margin-top: 30px;">
+                    <a href="{{ url_for('catalog') }}"
+                       style="display: inline-block; padding: 12px 30px; background: #ff2e63; color: white; text-decoration: none; border-radius: 50px; font-weight: 600;">
+                        Перейти в каталог
+                    </a>
+                </div>
+            </div>
+        {% endif %}
     </div>
 </section>
 {% endblock %}

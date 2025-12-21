@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}{{ product.title }}{% endblock %}
+
+{% block content %}
+<section class="product-detail" style="padding: 60px 0;">
+    <div class="container">
+        <div class="product-detail-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 50px; align-items: start;">
+            <div class="product-image-large">
+                <img src="{{ url_for('static', filename='images/products/' + product.image) }}"
+                     alt="{{ product.title }}"
+                     style="width: 100%; height: auto; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.1);"
+                     onerror="this.src='{{ url_for('static', filename='images/products/placeholder.jpg') }}'">
+            </div>
+            
+            <div class="product-info">
+                <h1 style="font-size: 2.5rem; margin-bottom: 15px; color: #333;">{{ product.title }}</h1>
+                
+                <div class="product-price" style="margin: 25px 0;">
+                    {% if product.old_price and product.old_price > product.price %}
+                        <span class="current-price" style="font-size: 2.2rem; color: #ff2e63; font-weight: 700;">
+                            {{ product.price }} ₽
+                        </span>
+                        <span class="old-price" style="font-size: 1.6rem; color: #999; text-decoration: line-through; margin: 0 15px;">
+                            {{ product.old_price }} ₽
+                        </span>
+                        <span class="discount" style="background: #ff2e63; color: white; padding: 5px 12px; border-radius: 6px; font-size: 1.2rem; font-weight: 600;">
+                            -{{ product.discount_percent }}%
+                        </span>
+                    {% else %}
+                        <span class="current-price" style="font-size: 2.2rem; color: #ff2e63; font-weight: 700;">
+                            {{ product.price }} ₽
+                        </span>
+                    {% endif %}
+                </div>
+                
+                <div class="product-meta" style="margin: 25px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    {% if product.brand %}
+                        <div style="display: flex; flex-direction: column;">
+                            <span style="font-size: 0.9rem; color: #777;">Бренд</span>
+                            <span style="font-weight: 600; font-size: 1.1rem;">{{ product.brand }}</span>
+                        </div>
+                    {% endif %}
+                    
+                    {% if product.sizes %}
+                        <div style="display: flex; flex-direction: column;">
+                            <span style="font-size: 0.9rem; color: #777;">Размеры</span>
+                            <span style="font-weight: 600; font-size: 1.1rem;">{{ product.sizes }}</span>
+                        </div>
+                    {% endif %}
+                    
+                    {% if product.color %}
+                        <div style="display: flex; flex-direction: column;">
+                            <span style="font-size: 0.9rem; color: #777;">Цвет</span>
+                            <span style="font-weight: 600; font-size: 1.1rem;">{{ product.color }}</span>
+                        </div>
+                    {% endif %}
+                    
+                    {% if product.sku %}
+                        <div style="display: flex; flex-direction: column;">
+                            <span style="font-size: 0.9rem; color: #777;">Артикул</span>
+                            <span style="font-weight: 600; font-size: 1.1rem;">{{ product.sku }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                {% if product.description %}
+                    <div class="product-description" style="margin: 30px 0;">
+                        <h3 style="font-size: 1.4rem; margin-bottom: 15px; color: #333;">Описание</h3>
+                        <p style="font-size: 1.1rem; line-height: 1.7; color: #555;">{{ product.description }}</p>
+                    </div>
+                {% endif %}
+                
+                <div class="product-actions" style="margin-top: 40px;">
+                    {% if current_user.is_authenticated %}
+                        <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="POST" style="margin-bottom: 15px;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" 
+                                    style="width: 100%; padding: 20px; background: #ff2e63; color: white; border: none; border-radius: 16px; font-size: 1.3rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                                Добавить в корзину
+                            </button>
+                        </form>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" 
+                           style="display: block; width: 100%; padding: 20px; background: #ff2e63; color: white; text-align: center; text-decoration: none; border-radius: 16px; font-size: 1.3rem; font-weight: 600; margin-bottom: 15px;">
+                            Войти, чтобы купить
+                        </a>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('catalog') }}" 
+                       style="display: block; width: 100%; padding: 20px; background: #f0f0f0; color: #333; text-align: center; text-decoration: none; border-radius: 16px; font-size: 1.3rem; font-weight: 600;">
+                        ← Назад в каталог
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

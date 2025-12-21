@@ -117,7 +117,7 @@ class Product(db.Model):
     price = db.Column(db.Float, nullable=False)                 # цена в рублях
     old_price = db.Column(db.Float, nullable=True)              # старая цена (для скидок)
     description = db.Column(db.Text, nullable=True)             # описание
-    image = db.Column(db.String(100), default="placeholder.png") # имя файла картинки
+    image = db.Column(db.String(100), default="placeholder.jpg") # имя файла картинки
     in_stock = db.Column(db.Boolean, default=True)              # есть ли в наличии
     is_new = db.Column(db.Boolean, default=False)               # новинка?
     is_sale = db.Column(db.Boolean, default=False)              # на распродаже?
@@ -136,6 +136,21 @@ class Product(db.Model):
     # Дата добавления (для сортировки "новинки")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    def update_search_text(self):
+        parts = [
+            self.title or '',
+            self.description or '',
+            self.tags or '',
+            self.brand or '',
+            self.color or '',
+            self.sku or ''
+        ]
+        # Убираем пустые строки, объединяем через пробел, приводим к нижнему регистру
+        self.search_text = ' '.join(part.strip() for part in parts if part).lower()
+        
+
+    
+
     def __repr__(self):
         return f"<Product {self.title}>"
 
@@ -145,3 +160,10 @@ class Product(db.Model):
         if self.old_price and self.old_price > self.price:
             return round((1 - self.price / self.old_price) * 100)
         return 0
+    
+from sqlalchemy import event
+
+@event.listens_for(Product, 'before_insert')
+@event.listens_for(Product, 'before_update')
+def before_product_save(mapper, connection, target):
+    target.update_search_text()

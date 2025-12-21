@@ -247,43 +247,16 @@ def register():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('index'))  # Всех на главную, не в админку!
-    
-    form = UserLoginForm()
-    
-    if form.validate_on_submit():
-        username = (form.username.data or '').strip()
-        
-        admin = Admin.query.filter_by(username=username).first()
-        if admin and admin.check_password(form.password.data):
-            login_user(admin, remember=True)
-            return redirect("/admin")  # Только админа в админку
-        
-        user = User.query.filter(or_(User.username == username, User.email == username)).first()
-        if user and user.check_password(form.password.data):
-            login_user(user, remember=True)
-            return redirect(url_for('index'))  # Обычного пользователя на главную
-        
-        flash('Неверный логин или пароль', 'error')
-    
-    return render_template('login.html', form=form)
-
-
-
-
-"""@app.route("/login", methods=["GET", "POST"])
-def login():
-    if current_user.is_authenticated:
         if isinstance(current_user, Admin):
             return redirect("/admin")
         return redirect(url_for('index'))
-        
+
     form = UserLoginForm()  # Используем UserLoginForm вместо LoginForm
     ip = request.remote_addr or 'unknown'
-    
+
     if form.validate_on_submit():
         username = (form.username.data or '').strip()
-        
+
         # Проверяем блокировку
         ip_key = f"ip:{ip}"
         user_key = f"user:{username}"
@@ -296,14 +269,14 @@ def login():
         user = Admin.query.filter_by(username=username).first()
         if not user:
             user = User.query.filter(or_(User.username == username, User.email == username)).first()
-            
+
         if user and user.check_password(form.password.data):
             # успешный вход — очищаем счётчики
             with _attempts_lock:
                 _login_attempts.pop(ip_key, None)
                 _login_attempts.pop(user_key, None)
             login_user(user, remember=True)
-            
+
             if isinstance(user, Admin):
                 return redirect("/admin")
             return redirect(url_for('index'))
@@ -315,18 +288,22 @@ def login():
             max(0, LOGIN_MAX_ATTEMPTS - _prune_attempts(ip_key)),
             max(0, LOGIN_MAX_ATTEMPTS - _prune_attempts(user_key))
         )
-        
+
         if attempts_left <= 0:
             flash("Слишком много попыток входа. Попробуйте позже.", "error")
         else:
             flash(f"Неверный логин или пароль. Осталось попыток: {attempts_left}", "error")
-            
-    return render_template("login.html", form=form)"""
+
+    return render_template("login.html", form=form)
+
+
+
+
 
 @app.route("/profile")
 @login_required
 def profile():
-    if current_user.is_admin():  # или hasattr(current_user, 'is_admin') и current_user.is_admin()
+    if hasattr(current_user, 'is_admin') and current_user.is_admin():
         return redirect(url_for('admin_panel'))
     return render_template('profile.html')
 
@@ -395,7 +372,8 @@ def admin_panel():
 def delete_product(product_id):
     try:
         product = Product.query.get_or_404(product_id)
-        if product.image != "placeholder.png":
+        # Используем правильное имя placeholder, согласованное с остальным приложением
+        if product.image != "placeholder.jpg":
             # Удаляем все три размера изображения (thumb, medium, full)
             base_name = product.image.replace("_thumb.jpg", "")
             for suffix in ["thumb", "medium", "full"]:
@@ -480,13 +458,13 @@ def cart():
 
     return render_template("cart.html", cart_items=cart_items, total=total)
 
-@app.route("/cart/add/<int:product_id>", methods=["POST"])
+@app.route("/cart/add/<int:product_id>", methods=["POST", "GET"])
 @login_required
 def add_to_cart(product_id):
     product = Product.query.get_or_404(product_id)
 
     cart_item = CartItem.query.filter_by(
-        user_id=current_user.id, 
+        user_id=current_user.id,
         product_id=product_id
     ).first()
 
@@ -556,43 +534,60 @@ def search():
     new = request.args.get('new')
     sale = request.args.get('sale')
 
-    products_q = Product.query
+    # Начинаем запрос: только товары в наличии
+    products_q = Product.query.filter(Product.in_stock == True)
 
+    # Поиск по тексту
     if q:
-        # простая проверка: ищем по объединённому полю,
-        # и на всякий случай — отдельно по описанию (если search_text пуст)
+        query_lower = q.lower()
         products_q = products_q.filter(
-            or_(Product.search_text.ilike(f"%{q}%"), Product.description.ilike(f"%{q}%"))
+            Product.search_text.like(f"%{query_lower}%")
         )
 
+    # Фильтр по категории (через slug)
     if category_slug:
-        cat = Category.query.filter_by(slug=category_slug).first()
-        if cat:
-            products_q = products_q.filter_by(category_id=cat.id)
+        category = Category.query.filter_by(slug=category_slug).first()
+        if category:
+            products_q = products_q.filter(Product.category_id == category.id)
 
-    try:
-        if min_price:
-            products_q = products_q.filter(Product.price >= float(min_price))
-        if max_price:
-            products_q = products_q.filter(Product.price <= float(max_price))
-    except ValueError:
-        pass
+    # Фильтр по цене
+    if min_price:
+        try:
+            min_val = float(min_price)
+            products_q = products_q.filter(Product.price >= min_val)
+        except (ValueError, TypeError):
+            pass  # игнорировать некорректные значения
 
+    if max_price:
+        try:
+            max_val = float(max_price)
+            products_q = products_q.filter(Product.price <= max_val)
+        except (ValueError, TypeError):
+            pass
+
+    # Флаги: новинки и распродажа
     if new:
-        products_q = products_q.filter_by(is_new=True)
+        products_q = products_q.filter(Product.is_new == True)
     if sale:
-        products_q = products_q.filter_by(is_sale=True)
+        products_q = products_q.filter(Product.is_sale == True)
 
+    # Сортировка: сначала новые
     products = products_q.order_by(Product.created_at.desc()).all()
+
     return render_template('search_results.html', products=products, q=q)
 
-# ===================== ЗАПУСК =====================
+@app.route('/product/<int:product_id>')
+def product(product_id):
+    product = Product.query.get_or_404(product_id)
+    return render_template('product_detail.html', product=product)
+
+#                         ===================== ЗАПУСК =====================
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
 
         # Проверка наличия placeholder изображения — удобная подсказка при разработке
-        placeholder_path = os.path.join(basedir, 'static', 'images', 'placeholder.png')
+        placeholder_path = os.path.join(basedir, 'static', 'images', 'placeholder.jpg')
         if not os.path.exists(placeholder_path):
             print("WARNING: placeholder image not found:", placeholder_path)
 

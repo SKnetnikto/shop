@@ -1,0 +1,44 @@
+<div class="product-card">
+    <div class="product-image">
+        <img src="{{ url_for('static', filename='images/products/' + product.image) }}"
+             alt="{{ product.title }}"
+             onerror="this.src='{{ url_for('static', filename='images/products/placeholder.jpg') }}'">
+        {% if product.is_new %}
+            <span class="badge new">Новинка</span>
+        {% endif %}
+        {% if product.is_sale %}
+            <span class="badge sale">Распродажа</span>
+        {% endif %}
+    </div>
+    
+    <div class="product-info">
+        <h3 class="product-title">{{ product.title }}</h3>
+        
+        <div class="product-price">
+            {% if product.old_price and product.old_price > product.price %}
+                <span class="current-price">{{ product.price }} ₽</span>
+                <span class="old-price">{{ product.old_price }} ₽</span>
+                <span class="discount">-{{ product.discount_percent }}%</span>
+            {% else %}
+                <span class="current-price">{{ product.price }} ₽</span>
+            {% endif %}
+        </div>
+        
+        <div class="product-meta">
+            {% if product.brand %}
+                <span class="brand">Бренд: {{ product.brand }}</span>
+            {% endif %}
+            {% if product.sizes %}
+                <span class="sizes">Размеры: {{ product.sizes }}</span>
+            {% endif %}
+        </div>
+        
+        <div class="product-actions">
+            <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="POST" style="width: 100%;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-primary">В корзину</button>
+            </form>
+            <a href="{{ url_for('product', product_id=product.id) }}" class="btn btn-secondary">Подробнее</a>
+        </div>
+    </div>
+</div>

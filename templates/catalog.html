@@ -67,52 +67,12 @@
             </aside>
 
             <!-- Сетка товаров -->
-            <div class="products-grid">
+            <div class="products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; margin-top: 20px;">
                 {% if products|length == 0 %}
                     <p class="no-products">Товаров пока нет. Но скоро будут! ♡</p>
                 {% else %}
                     {% for product in products %}
-                    <article class="product-card">
-                        <div class="product-card__image">
-                               <img src="{{ url_for('static', filename='images/products/' + product.image) }}"
-                                   alt="{{ product.title }}"
-                                   data-placeholder="{{ url_for('static', filename='images/placeholder.png') }}"
-                                   onerror="this.src=this.dataset.placeholder">
-                            {% if product.is_new %}
-                                <span class="badge badge--new">Новинка</span>
-                            {% endif %}
-                            {% if product.is_sale and product.discount_percent > 0 %}
-                                <span class="badge badge--sale">-{{ product.discount_percent }}%</span>
-                            {% endif %}
-                        </div>
-
-                        <div class="product-card__info">
-                            <h3 class="product-card__title">{{ product.title }}</h3>
-                             {% if product.sizes %}
-                                <div class="product-card__sizes">
-                                     Размеры: {{ product.sizes }}
-                               </div>
-                            {% endif %}
-                             <div class="product-card__price">
-                                 <span class="price-current">{{ product.price }} ₽</span>
-                                    {% if product.old_price %}
-                             <span class="price-old">{{ product.old_price }} ₽</span>
-                            {% endif %}
-                        </div>
-
-    
-            <!-- Кнопка "Добавить в корзину" — компактная и красивая -->
-                            <div style="text-align: center; margin-top: 16px;">
-                                <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="POST" style="display: inline-block;">
-                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                      <button type="submit" class="btn btn--primary" style="padding: 12px 32px; font-size: 1.1rem; font-weight: 600;">
-                                            Добавить в корзину
-                                     </button>
-                                 </form>
-                            </div>
-
-
-                    </article>
+                        {% include 'product_card.html' %}
                     {% endfor %}
                 {% endif %}
             </div>
