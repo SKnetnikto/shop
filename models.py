@@ -15,15 +15,15 @@ class Category(db.Model):
     """
     Модель категории товаров (Женское, Мужское, Детское и т.д.)
     """
-    __tablename__ = 'category'                  # имя таблицы в базе
+    __tablename__ = 'category'                  
 
-    id = db.Column(db.Integer, primary_key=True)        # уникальный ID
-    name = db.Column(db.String(50), unique=True, nullable=False)  # название, например "Женское"
-    slug = db.Column(db.String(50), unique=True, nullable=False)  # для URL: /category/women
-    icon = db.Column(db.String(20), default="👗")       # эмодзи-иконка для красоты
-    order = db.Column(db.Integer, default=0)            # для сортировки в меню
+    id = db.Column(db.Integer, primary_key=True)      
+    name = db.Column(db.String(50), unique=True, nullable=False)  
+    slug = db.Column(db.String(50), unique=True, nullable=False)  
+    icon = db.Column(db.String(20), default="👗")       
+    order = db.Column(db.Integer, default=0)          
 
-    # Связь с товарами (одна категория — много товаров)
+    
     products = db.relationship('Product', backref='category', lazy=True)
 
     def __repr__(self):

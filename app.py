@@ -300,7 +300,11 @@ def login():
 def profile():
     if hasattr(current_user, 'is_admin') and current_user.is_admin():
         return redirect(url_for('admin_panel'))
-    return render_template('profile.html')
+
+    # Получаем информацию о пользователе и его заказы/покупки
+    user = current_user
+    # Можно добавить получение истории заказов или других данных
+    return render_template('profile.html', user=user)
 
 
 
@@ -584,6 +588,12 @@ def search():
     new = request.args.get('new')
     sale = request.args.get('sale')
 
+    # Новые параметры для атрибутного поиска
+    brand = request.args.get('brand')
+    color = request.args.get('color')
+    size = request.args.get('size')
+    tag = request.args.get('tag')
+
     # Начинаем запрос: только товары в наличии
     products_q = Product.query.filter(Product.in_stock == True)
 
@@ -614,6 +624,21 @@ def search():
             products_q = products_q.filter(Product.price <= max_val)
         except (ValueError, TypeError):
             pass
+
+    # Фильтр по атрибутам
+    if brand:
+        products_q = products_q.filter(Product.brand.ilike(f"%{brand}%"))
+
+    if color:
+        products_q = products_q.filter(Product.color.ilike(f"%{color}%"))
+
+    if size:
+        # Поиск размера в строке sizes (предполагаем, что размеры разделены запятыми)
+        products_q = products_q.filter(Product.sizes.ilike(f"%{size}%"))
+
+    if tag:
+        # Поиск тега в строке tags (предполагаем, что теги разделены запятыми)
+        products_q = products_q.filter(Product.tags.ilike(f"%{tag}%"))
 
     # Флаги: новинки и распродажа
     if new:

@@ -54,6 +54,7 @@
                 </li>
 
                 {% if current_user.is_authenticated %}
+                    <li><a href="{{ url_for('profile') }}" class="profile-btn">Профиль</a></li>
                     <li><a href="/logout" class="logout-btn">Выйти</a></li>
                 {% else %}
                     <li><a href="{{ url_for('novelties') }}" class="nav-link">Новинки</a></li>
