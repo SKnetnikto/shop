@@ -174,9 +174,6 @@ def index():
 
 @app.route("/catalog")
 def catalog():
-    # Загружаем все категории для бокового меню
-    categories = Category.query.order_by(Category.order).all()
-
     # Получаем параметры из URL
     category_slug = request.args.get('category')
     show_new = request.args.get('new') == 'true'
@@ -213,7 +210,6 @@ def catalog():
     # Передаём в шаблон
     return render_template(
         "catalog.html",
-        categories=categories,
         products=products,
         current_category=current_category,  # можно использовать в шаблоне, если захочешь
         novelties=show_new  # у тебя уже есть это условие в hero-секции
@@ -222,9 +218,8 @@ def catalog():
 
 @app.route('/novelties')
 def novelties():
-    categories = Category.query.order_by(Category.order).all()
     products = Product.query.order_by(Product.created_at.desc()).limit(10).all()
-    return render_template('catalog.html', categories=categories, products=products, novelties=True)
+    return render_template('catalog.html', products=products, novelties=True)
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if current_user.is_authenticated:
@@ -430,6 +425,40 @@ def edit_product(product_id):
 def forbidden(error):
     return render_template('403.html'), 403
 
+import os
+
+# ===================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====================
+def get_image_path(base_image_name, size_suffix):
+    """
+    Возвращает путь к изображению нужного размера, проверяя его существование
+    """
+    if not base_image_name or base_image_name == "placeholder.jpg":
+        return base_image_name
+
+    # Получаем имя файла без суффикса
+    if base_image_name.endswith('_thumb.jpg'):
+        base_name = base_image_name.replace('_thumb.jpg', '')
+    else:
+        # Если это не thumb-файл, используем как есть
+        base_name = base_image_name.replace('.jpg', '')
+
+    # Формируем имя файла нужного размера
+    target_filename = f"{base_name}_{size_suffix}.jpg"
+
+    # Проверяем, существует ли файл в папке загрузки
+    upload_folder = app.config['UPLOAD_FOLDER']
+    full_path = os.path.join(upload_folder, target_filename)
+
+    # Если файл существует, возвращаем его имя, иначе возвращаем оригинальное
+    if os.path.exists(full_path):
+        return target_filename
+    else:
+        # Если файл нужного размера не существует, возвращаем оригинальное имя
+        # или возвращаем thumb, если запрашиваемый размер не thumb
+        if size_suffix != 'thumb' and base_image_name.endswith('_thumb.jpg'):
+            return base_image_name  # возвращаем thumb, если запрашиваемый размер отсутствует
+        return base_image_name
+
 # ===================== КОНТЕКСТНЫЙ ПРОЦЕССОР =====================
 # Делает переменную categories доступной ВО ВСЕХ шаблонах автоматически
 @app.context_processor
@@ -439,8 +468,7 @@ def inject_categories():
     Теперь можно использовать {{ categories }} и Category в любом .html
     """
     categories = Category.query.order_by(Category.order).all()
-    return dict(categories=categories)
-
+    return dict(categories=categories, get_image_path=get_image_path)
 
 # ===================== КОРЗИНА =====================
 @app.route("/cart")

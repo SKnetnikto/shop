@@ -1,8 +1,9 @@
-<div class="product-card">
+<div class="product-card" onclick="openProductModal({{ product.id }}, '{{ product.title|e }}', '{{ get_image_path(product.image, 'medium')|e }}', '{{ get_image_path(product.image, 'full')|e }}', {{ product.price }}, {{ product.old_price or 'null' }}, '{{ product.description|e }}', '{{ product.brand|e }}', '{{ product.sizes|e }}', {{ product.discount_percent }}, {{ product.is_new|lower }}, {{ product.is_sale|lower }})">
     <div class="product-image">
-        <img src="{{ url_for('static', filename='images/products/' + product.image) }}"
+        <img src="{{ url_for('static', filename='images/products/' + get_image_path(product.image, 'medium')) }}"
              alt="{{ product.title }}"
-             onerror="this.src='{{ url_for('static', filename='images/products/placeholder.jpg') }}'">
+             onerror="this.src='{{ url_for('static', filename='images/products/placeholder.jpg') }}'"
+             onclick="event.stopPropagation();">
         {% if product.is_new %}
             <span class="badge new">Новинка</span>
         {% endif %}
@@ -10,10 +11,16 @@
             <span class="badge sale">Распродажа</span>
         {% endif %}
     </div>
-    
-    <div class="product-info">
+
+    <div class="product-info" onclick="event.stopPropagation();">
         <h3 class="product-title">{{ product.title }}</h3>
-        
+
+        {% if product.description %}
+            <div class="product-description" style="margin: 10px 0; font-size: 0.95rem; color: #666; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                {{ product.description }}
+            </div>
+        {% endif %}
+
         <div class="product-price">
             {% if product.old_price and product.old_price > product.price %}
                 <span class="current-price">{{ product.price }} ₽</span>
@@ -23,7 +30,7 @@
                 <span class="current-price">{{ product.price }} ₽</span>
             {% endif %}
         </div>
-        
+
         <div class="product-meta">
             {% if product.brand %}
                 <span class="brand">Бренд: {{ product.brand }}</span>
@@ -32,13 +39,13 @@
                 <span class="sizes">Размеры: {{ product.sizes }}</span>
             {% endif %}
         </div>
-        
-        <div class="product-actions">
+
+        <div class="product-actions" onclick="event.stopPropagation();">
             <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="POST" style="width: 100%;">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-primary">В корзину</button>
             </form>
-            <a href="{{ url_for('product', product_id=product.id) }}" class="btn btn-secondary">Подробнее</a>
+            <a href="{{ url_for('product', product_id=product.id) }}" class="btn btn-secondary" onclick="event.stopPropagation();">Подробнее</a>
         </div>
     </div>
 </div>

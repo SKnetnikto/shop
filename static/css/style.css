@@ -1377,3 +1377,201 @@ Hero каталога (.catalog-hero)
         font-size: 1.2rem;
     }
 }
+
+/* Модальное окно для просмотра товара */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.8);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    position: relative;
+    background-color: white;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 20px;
+    width: 80%;
+    max-width: 900px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 20px 30px;
+    background: #ff2e63;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.8rem;
+}
+
+.close-modal {
+    color: white;
+    font-size: 2.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.3s;
+}
+
+.close-modal:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+.modal-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    padding: 30px;
+}
+
+.modal-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-image img {
+    max-width: 100%;
+    max-height: 500px;
+    border-radius: 12px;
+    object-fit: contain;
+}
+
+.modal-info {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.modal-description {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #555;
+}
+
+.modal-price {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #ff2e63;
+    margin: 10px 0;
+}
+
+.modal-old-price {
+    font-size: 1.4rem;
+    color: #999;
+    text-decoration: line-through;
+    margin: 0 10px;
+}
+
+.modal-discount {
+    background: #ff2e63;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.modal-meta {
+    margin: 15px 0;
+}
+
+.modal-meta div {
+    margin-bottom: 8px;
+    font-size: 1rem;
+    color: #666;
+}
+
+.modal-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 15px;
+}
+
+.modal-btn {
+    padding: 14px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    flex: 1;
+}
+
+.modal-btn-primary {
+    background: #ff2e63;
+    color: white;
+}
+
+.modal-btn-primary:hover {
+    background: #e01e5a;
+    transform: translateY(-2px);
+}
+
+.modal-btn-secondary {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.modal-btn-secondary:hover {
+    background: #e0e0e0;
+    transform: translateY(-2px);
+}
+
+/* Адаптивность для модального окна */
+@media (max-width: 992px) {
+    .modal-content {
+        width: 90%;
+        margin: 10% auto;
+    }
+
+    .modal-body {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        margin: 5% auto;
+    }
+
+    .modal-header {
+        padding: 15px 20px;
+    }
+
+    .modal-header h2 {
+        font-size: 1.4rem;
+    }
+
+    .modal-body {
+        padding: 20px;
+        gap: 15px;
+    }
+
+    .modal-actions {
+        flex-direction: column;
+    }
+}

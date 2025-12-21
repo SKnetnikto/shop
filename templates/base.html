@@ -31,7 +31,7 @@
                     <a href="#">Каталог</a>
                     <div class="dropdown">
                         {% for cat in categories %}
-                            <a href="/catalog?category={{ cat.slug }}">{{ cat.icon }} {{ cat.name }}</a>
+                            <a href="/catalog?category={{ cat.slug }}">{{ cat.name }}</a>
                         {% endfor %}
                     </div>
                 </li>
@@ -109,6 +109,43 @@
     </div>
 </footer>
 
+<!-- Модальное окно для просмотра товара -->
+<div id="productModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalProductTitle">Заголовок товара</h2>
+            <button class="close-modal" onclick="closeProductModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-image">
+                <img id="modalProductImage" src="" alt="Изображение товара">
+            </div>
+            <div class="modal-info">
+                <div id="modalProductDescription" class="modal-description"></div>
+
+                <div class="modal-price">
+                    <span id="modalCurrentPrice"></span>
+                    <span id="modalOldPrice" style="display: none;"></span>
+                    <span id="modalDiscount" style="display: none;"></span>
+                </div>
+
+                <div class="modal-meta">
+                    <div id="modalBrand"></div>
+                    <div id="modalSizes"></div>
+                </div>
+
+                <div class="modal-actions">
+                    <form id="modalAddToCartForm" method="POST" style="width: 100%;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="modal-btn modal-btn-primary">Добавить в корзину</button>
+                    </form>
+                    <a id="modalProductDetailLink" href="#" class="modal-btn modal-btn-secondary">Перейти на страницу товара</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Основной скрипт сайта -->
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
@@ -116,6 +153,85 @@
 {% if request.endpoint == 'cart' %}
     <script src="{{ url_for('static', filename='js/cart.js') }}"></script>
 {% endif %}
+
+<script>
+    function openProductModal(id, title, mediumImage, fullImage, price, oldPrice, description, brand, sizes, discount, isNew, isSale) {
+        // Обновляем информацию в модальном окне
+        document.getElementById('modalProductTitle').textContent = title;
+
+        // Устанавливаем путь к full-изображению
+        document.getElementById('modalProductImage').src = "{{ url_for('static', filename='images/products/') }}" + fullImage;
+        document.getElementById('modalProductImage').alt = title;
+
+        document.getElementById('modalProductDescription').textContent = description;
+
+        // Цена
+        document.getElementById('modalCurrentPrice').textContent = price + ' ₽';
+
+        // Старая цена и скидка
+        const oldPriceElement = document.getElementById('modalOldPrice');
+        const discountElement = document.getElementById('modalDiscount');
+
+        if (oldPrice && oldPrice > price) {
+            oldPriceElement.textContent = oldPrice + ' ₽';
+            oldPriceElement.style.display = 'inline';
+            discountElement.textContent = '-'+ discount + '%';
+            discountElement.style.display = 'inline';
+        } else {
+            oldPriceElement.style.display = 'none';
+            discountElement.style.display = 'none';
+        }
+
+        // Бренд и размеры
+        const brandElement = document.getElementById('modalBrand');
+        if (brand && brand !== 'null') {
+            brandElement.textContent = 'Бренд: ' + brand;
+        } else {
+            brandElement.textContent = '';
+        }
+
+        const sizesElement = document.getElementById('modalSizes');
+        if (sizes && sizes !== 'null') {
+            sizesElement.textContent = 'Размеры: ' + sizes;
+        } else {
+            sizesElement.textContent = '';
+        }
+
+        // Форма добавления в корзину
+        const addToCartForm = document.getElementById('modalAddToCartForm');
+        addToCartForm.action = '/cart/add/' + id;
+
+        // Ссылка на страницу деталей
+        const detailLink = document.getElementById('modalProductDetailLink');
+        detailLink.href = '/product/' + id;
+
+        // Показываем модальное окно
+        document.getElementById('productModal').style.display = 'block';
+
+        // Предотвращаем прокрутку фона
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeProductModal() {
+        document.getElementById('productModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    // Закрытие модального окна при клике вне его содержимого
+    window.onclick = function(event) {
+        const modal = document.getElementById('productModal');
+        if (event.target === modal) {
+            closeProductModal();
+        }
+    }
+
+    // Закрытие по клавише Escape
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeProductModal();
+        }
+    });
+</script>
 
 </body>
 </html>
