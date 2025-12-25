@@ -29,7 +29,7 @@
                         {% endif %}
                         <span style="font-size: 1.6rem; color: #ff2e63; font-weight: 700;">{{ item.product.price }} ₽</span>
 
-                        <!-- Количество -->
+                        <!-- Кол-во -->
                         <div class="quantity-wrapper" style="margin: 20px 0; text-align: center;">
                             <!-- Форма изменения количества с CSRF и удалением при 0 -->
                              <form action="{{ url_for('update_cart_item', cart_item_id=item.id) }}" method="POST" class="quantity-form">
@@ -51,7 +51,7 @@
                 {% endfor %}
             </div>
 
-            <!-- Общая сумма и кнопки -->
+            <!-- общая сумма и кнопки -->
             <div style="text-align:center; margin:60px 0;">
                 <p style="font-size:2.2rem;">Общая сумма: <strong style="color:#ff2e63; font-size:3rem;">{{ total|int }} ₽</strong></p>
                 <div style="margin-top:30px; display:flex; gap:20px; justify-content:center; flex-wrap:wrap;">

@@ -1,7 +1,4 @@
-/* ==================================================================
-   style.css — Шиповник — финальная версия 2025
-   Всё красиво, адаптивно, с фоном на логине и вежливым текстом
-   ================================================================== */
+
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -115,7 +112,7 @@ body {
 
 .search-btn:hover { transform: translateY(-3px); opacity: 0.95; }
 
-/* Small screens: search stretches and becomes block in mobile menu */
+
 @media (max-width: 992px) {
     .search-input { width: 100%; max-width: none; font-size: 1.25rem; }
     .nav-search { width: 100%; padding: 0 24px; }
@@ -318,7 +315,7 @@ body {
     box-shadow: 0 30px 60px rgba(0,0,0,0.3);
 }
 
-/* ===================== КРАСИВАЯ СТРАНИЦА ВХОДА ===================== */
+/* =====================  СТРАНИЦА ВХОДА ===================== */
 .login-section {
     min-height: 100vh;
     position: relative;
@@ -334,7 +331,7 @@ body {
     z-index: -2;
 }
 
-/* Делаем overlay почти прозрачным, чтобы фон был хорошо виден */
+/* сделатьпочти прозрачным, чтобы фон был хорошо виден */
 .login-overlay {
     display: none;
 }
@@ -722,10 +719,9 @@ body.dark-mode {
     transform: rotate(-20deg) scale(0.95);
 }
 
-/* Ховер эффекты */
 .theme-icon:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(16,24,40,0.12); }
 
-/* Footer link style */
+
 .footer-links { margin-top: 8px; }
 .footer a { color: #cfcfcf; text-decoration: none; font-weight: 600; }
 .footer a:hover { color: #fff; text-decoration: underline; }
@@ -759,7 +755,7 @@ body.dark-mode {
     border: none;
 }
 
-/* Мобильная версия */
+/* мобильная версия */
 @media (max-width: 992px) {
     .auth-buttons {
         flex-direction: column;
@@ -776,30 +772,30 @@ body.dark-mode {
     }
 }
 
-/* Стили только для формы регистрации */
+/* стили только для формы регистрации */
 .register-section .register-container {
-    max-width: 600px;  /* Уменьшили максимальную ширину */
+    max-width: 600px;  
     margin: 50px auto;
-    padding: 40px;  /* Уменьшили отступы */
+    padding: 40px;  
 }
 
 .register-section .form-input {
     width: 100%;
-    max-width: 400px;  /* Ограничили максимальную ширину полей */
-    margin: 0 auto;  /* Центрируем поля */
-    padding: 12px 16px;  /* Уменьшили внутренние отступы */
-    font-size: 1rem;  /* Уменьшили размер шрифта */
+    max-width: 400px;  
+    margin: 0 auto;  
+    padding: 12px 16px;  
+    font-size: 1rem;  
 }
 
 .register-section .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
-    max-width: 400px;  /* Ограничили ширину сетки */
+    max-width: 400px;  
     margin: 0 auto;
 }
 
-/* Мобильная версия */
+
 @media (max-width: 768px) {
     .register-section .form-row {
         grid-template-columns: 1fr;
@@ -809,25 +805,24 @@ body.dark-mode {
         max-width: 100%;
     }
 }
-/* Стили только для формы входа */
+/* стили входа */
 .login-section .login-container {
-    max-width: 400px;  /* Уменьшили ширину */
+    max-width: 400px;  
     margin: 50px auto;
-    padding: 40px;  /* Уменьшили отступы */
+    padding: 40px;  
 }
 
 .login-section .form-input {
     width: 100%;
-    padding: 12px 16px;  /* Уменьшили внутренние отступы */
-    font-size: 1rem;  /* Уменьшили размер шрифта */
+    padding: 12px 16px;  
+    font-size: 1rem;  
 }
 
 .login-section .btn--full {
-    padding: 14px;  /* Уменьшили высоту кнопки */
-    font-size: 1.1rem;  /* Уменьшили размер шрифта */
+    padding: 14px;  
+    font-size: 1.1rem;  
 }
 
-/* Мобильная версия */
 @media (max-width: 768px) {
     .login-section .login-container {
         padding: 30px 20px;
@@ -840,7 +835,7 @@ body.dark-mode {
 }
 
 
-/* Профиль пользователя */
+/* Профиль юзера*/
 .profile-section {
     padding: 80px 0;
 }
@@ -883,8 +878,7 @@ body.dark-mode {
     gap: 20px;
     justify-content: center;
 }
-
-/* Мобильная версия */
+ 
 @media (max-width: 768px) {
     .profile-card {
         padding: 30px;
@@ -914,57 +908,9 @@ body.dark-mode {
 
 
 
-/*Общие стили (*, html, body, .container)
-Шапка (.header, .header__inner, .logo)
-Навигация (.nav__list, .nav__dropdown, .dropdown)
-Поиск (.nav-search, .search-input, .search-btn)
-Корзина (.cart, .cart-badge)
-Бургер-меню (.burger)
-Переключатель темы (.theme-toggle, .theme-icon)
-Футер (.footer)
-Темная тема (.dark-mode)
-
-Стили, применяемые в index.html:
-Hero-секция (.hero, .hero h1, .hero p, .hero .btn)
-
-Стили, применяемые в login.html:
-Секция входа (.login-section, .login-bg-image, .login-overlay)
-Карточка входа (.login-card, .login-header, .login-greeting)
-Форма (.form-group, .form-label, .form-input)
-Кнопки (.btn--full, .btn--back)
-Флеш-сообщения (.flash)
-
-Стили, применяемые в register.html:
-Те же стили, что и в login.html
-
-Стили, применяемые в админских файлах:
-Заголовки (.admin-title)
-Формы (.add-product-card, .form-grid, .form-label-big, .form-input-big)
-Загрузка фото (.form-file-input, .photo-hint, .image-preview)
-Чекбоксы (.checkbox-group, .checkbox-label)
-Кнопки (.btn--big)
-Список товаров (.products-list, .empty-state)
-
-Стили, применяемые в catalog.html:
-Hero каталога (.catalog-hero)
-Боковая панель (.sidebar)
-Сетка товаров (.products-grid)
-Карточки товаров (.product-card)
-
-Стили, применяемые в cart.html:
-Секция корзины (.cart-section)
-Пустая корзина (.cart-empty)
-Предложения (.cart-suggestions)
-Преимущества (.cart-benefits)
 
 
-Неиспользуемые стили:
-.products-list (есть в CSS, но в HTML используется .products-admin-grid)
-.form-error (есть в CSS, но в HTML используется .error)
-Стили без применения:
-.login-overlay (установлен display: none)
-
-/* Адаптивность для кнопок корзины и админа в мобильном меню */
+/* адаптивность корзины и админа  */
 @media (max-width: 768px) {
     .nav__list {
         flex-direction: column;
@@ -1128,7 +1074,7 @@ Hero каталога (.catalog-hero)
     transform: scale(1.1);
 }
 
-/* Мобильная адаптация корзины */
+/* корзина */
 @media (max-width: 992px) {
     .cart-items-grid {
         grid-template-columns: 1fr;
@@ -1155,7 +1101,7 @@ Hero каталога (.catalog-hero)
         gap: 16px;
     }
 }
-/* Кнопка добавления в корзину — в общем стиле магазина */
+
 .add-to-cart-btn {
     width: 100%;
     padding: 16px 20px;
@@ -1178,7 +1124,7 @@ Hero каталога (.catalog-hero)
     font-size: 1.3rem;
 }
 
-/* Компактная кнопка добавления в корзину */
+
 .product-card .btn.btn--primary {
     padding: 12px 32px;
     font-size: 1.1rem;
@@ -1191,7 +1137,7 @@ Hero каталога (.catalog-hero)
     box-shadow: 0 10px 25px rgba(255,46,99,0.25);
 }
 
-/* На мобильных — кнопка чуть шире, но не на всю ширину */
+/*кнопка чуть шире, но не на всю ширину */
 @media (max-width: 768px) {
     .product-card .btn.btn--primary {
         padding: 14px 28px;
@@ -1246,7 +1192,7 @@ Hero каталога (.catalog-hero)
     border: 1px solid #f5c6cb;
 }
 
-/* Стили для карточки товара */
+/*============== стили для карточки товара============= */
 .product-card {
     background: white;
     border-radius: 20px;
@@ -1268,7 +1214,7 @@ Hero каталога (.catalog-hero)
     position: relative;
     overflow: hidden;
     height: 250px;
-    min-height: 250px; /* Фиксируем минимальную высоту */
+    min-height: 250px; 
 }
 
 .product-image img {
@@ -1409,18 +1355,18 @@ Hero каталога (.catalog-hero)
     transform: translateY(-2px);
 }
 
-/* Адаптивность для карточки товара */
+/* адаптивность карточки*/
 @media (max-width: 768px) {
     .product-card {
         border-radius: 16px;
         margin-bottom: 20px;
-        overflow: visible; /* Позволяем содержимому выходить за границы при необходимости */
-        min-height: 520px; /* Увеличиваем минимальную высоту для мобильных */
+        overflow: visible; 
+        min-height: 520px; 
     }
 
     .product-image {
-        height: 280px; /* Увеличиваем высоту изображения */
-        min-height: 230px; /* Минимальная высота */
+        height: 280px; 
+        min-height: 230px; 
     }
 
     .product-title {
@@ -1431,17 +1377,17 @@ Hero каталога (.catalog-hero)
         font-size: 1.2rem;
     }
 
-    /* Улучшения для мобильных устройств */
+    /* теперь для мобильных лучше */
     .product-actions {
         flex-direction: column;
         gap: 10px;
-        margin-top: 15px; /* Обеспечиваем отступ сверху */
+        margin-top: 15px; 
     }
 
     .btn {
         padding: 14px;
         font-size: 1rem;
-        min-height: 48px; /* Минимальная высота кнопки для лучшей тапабельности */
+        min-height: 48px; 
     }
 
     .btn-primary, .btn-secondary {
@@ -1452,16 +1398,16 @@ Hero каталога (.catalog-hero)
     }
 }
 
-/* Дополнительные улучшения для очень маленьких экранов */
+/*  для маленьких экранов   ? */
 @media (max-width: 480px) {
     .product-card {
         margin: 10px;
-        padding: 16px; /* Добавляем внутренние отступы */
-        min-height: 500px; /* Увеличиваем минимальную высоту для маленьких экранов */
+        padding: 16px; /* обавить  отступы */
+        min-height: 500px; 
     }
 
     .product-image {
-        height: 250px; /* Увеличиваем высоту изображения */
+        height: 250px; 
         min-height: 200px;
     }
 
@@ -1491,7 +1437,7 @@ Hero каталога (.catalog-hero)
     }
 }
 
-/* Модальное окно для просмотра товара */
+/* Модальное окно */
 .modal {
     display: none;
     position: fixed;
@@ -1695,7 +1641,7 @@ Hero каталога (.catalog-hero)
     transform: translateY(-2px);
 }
 
-/* Адаптивность для модального окна */
+/* адаптивность для модального окна */
 @media (max-width: 992px) {
     .modal-content {
         width: 90%;
@@ -1736,7 +1682,7 @@ Hero каталога (.catalog-hero)
     }
 }
 
-/* Дополнительные улучшения для очень маленьких экранов */
+/* для маленьких экранов */
 @media (max-width: 480px) {
     .modal-content {
         width: 98%;

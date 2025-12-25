@@ -4,7 +4,7 @@
 {% block content %}
 <section class="admin-section">
     <div class="container">
-        <!-- Флеш-сообщения -->
+        <!-- флеш-сообщения -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}

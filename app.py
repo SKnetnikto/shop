@@ -1,4 +1,4 @@
-# app.py — финальная, проверенная и 100% рабочая версия
+# app.py — главный
 from flask import Flask, render_template, request, redirect, url_for, flash, session, abort
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_wtf import FlaskForm, CSRFProtect
@@ -24,16 +24,16 @@ from datetime import timedelta
 
 from utils.image_processor import process_product_image
 
-# ===================== НАСТРОЙКИ ПРИЛОЖЕНИЯ =====================
+
 import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
-# ВАЖНО: импортируем модели СРАЗУ, до создания приложения!
+# ВАЖНО: импорт  СРАЗУ!
 from models import db, Category, Product, User, CartItem
 
 
-# Создаём приложение
+# Создаём приложение==============
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = os.urandom(32)
@@ -45,11 +45,10 @@ app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'webp', 'gif'}
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=1)  # 1 день
 
 
-# Простейший in-memory лимитер попыток входа
+#  ========лимитер попыток входа   ========
 # Ограничение: не более LOGIN_MAX_ATTEMPTS попыток в LOGIN_WINDOW_SECONDS
 LOGIN_MAX_ATTEMPTS = 5
 LOGIN_WINDOW_SECONDS = 15 * 60  # 15 минут
-# Структура: ключ -> list[unix_timestamp]
 _login_attempts = defaultdict(list)
 _attempts_lock = Lock()
 
@@ -58,12 +57,10 @@ def _prune_attempts(key):
     window_start = now - LOGIN_WINDOW_SECONDS
     with _attempts_lock:
         lst = _login_attempts.get(key, [])
-        # keep only timestamps within window
         lst = [t for t in lst if t >= window_start]
         if lst:
             _login_attempts[key] = lst
         else:
-            # remove empty to avoid memory growth
             _login_attempts.pop(key, None)
         return len(lst)
 
@@ -77,7 +74,7 @@ def _is_blocked(key):
     return cnt >= LOGIN_MAX_ATTEMPTS
 
 def _remaining_block_seconds(key):
-    # returns seconds until the earliest attempt ages out enough
+    
     with _attempts_lock:
         lst = _login_attempts.get(key, [])
         if not lst:
@@ -89,7 +86,7 @@ def _remaining_block_seconds(key):
 
 
 
-# Создаём папки
+# делаем папки (потом проверить!)
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(os.path.join(basedir, 'instance'), exist_ok=True)  # ← важная строка!
 
@@ -105,13 +102,13 @@ def admin_required(f):
         if not current_user.is_authenticated:
             return redirect(url_for('login'))
         if not (hasattr(current_user, 'is_admin') and current_user.is_admin()):
-            abort(403)  # Запрещено
+            abort(403)  # облом
         return f(*args, **kwargs)
     return decorated_function
 
 @login_manager.user_loader
 def load_user(user_id):
-    # Пытаемся найти админа или обычного пользователя
+    # ищем админа или обычного пользователя
     admin = Admin.query.get(int(user_id))
     if admin:
         return admin
@@ -179,10 +176,10 @@ def catalog():
     show_new = request.args.get('new') == 'true'
     show_sale = request.args.get('sale') == 'true'
 
-    # Начинаем базовый запрос
+    # базовый запрос
     query = Product.query
 
-    # Фильтр по категории
+    # фильтр по категории
     if category_slug:
         category = Category.query.filter_by(slug=category_slug).first_or_404()
         query = query.filter_by(category_id=category.id)
@@ -198,21 +195,21 @@ def catalog():
     if show_sale:
         query = query.filter_by(is_sale=True)
 
-    # Сортировка: сначала по новизне (если включён фильтр new), иначе по дате добавления
+    # Сортировка сначала по новизне , иначе по дате добавления
     if show_new:
         query = query.order_by(Product.created_at.desc())
     else:
         query = query.order_by(Product.created_at.desc())
 
-    # Выполняем запрос
+    
     products = query.all()
 
     # Передаём в шаблон
     return render_template(
         "catalog.html",
         products=products,
-        current_category=current_category,  # можно использовать в шаблоне, если захочешь
-        novelties=show_new  # у тебя уже есть это условие в hero-секции
+        current_category=current_category,  # можно использовать в шаблоне
+        novelties=show_new  #  уже есть это условие
     )
 
 
@@ -246,7 +243,7 @@ def login():
             return redirect("/admin")
         return redirect(url_for('index'))
 
-    form = UserLoginForm()  # Используем UserLoginForm вместо LoginForm
+    form = UserLoginForm()  #  вместо LoginForm
     ip = request.remote_addr or 'unknown'
 
     if form.validate_on_submit():
@@ -260,13 +257,13 @@ def login():
             flash(f"Слишком много попыток входа. Попробуйте через {rem} секунд.", "error")
             return render_template("login.html", form=form)
 
-        # Ищем пользователя среди админов и обычных пользователей
+        # ищем пользователя среди админов и обычных пользователей
         user = Admin.query.filter_by(username=username).first()
         if not user:
             user = User.query.filter(or_(User.username == username, User.email == username)).first()
 
         if user and user.check_password(form.password.data):
-            # успешный вход — очищаем счётчики
+            #  очищаем счётчики(если получилось)
             with _attempts_lock:
                 _login_attempts.pop(ip_key, None)
                 _login_attempts.pop(user_key, None)
@@ -324,7 +321,7 @@ def admin_panel():
     # Обработка отправки формы вне зависимости от валидации
     if request.method == "POST":
         print("Форма отправлена, начинаем обработку")
-        # Обработка фото — если загружено новое
+        # обработка фото — если загружено новое
         if form.image.data:
             print("Загружено изображение:", form.image.data.filename)
             image_filename = process_product_image(form.image.data)
@@ -358,7 +355,7 @@ def admin_panel():
         flash(f"Товар «{product.title}» успешно добавлен!", "success")
         return redirect(url_for("admin_products"))
     else:
-        # Если форма не прошла валидацию, показываем ошибки
+        # форма не прошла валидацию -- показать ошибки
         if form.errors:
             for field, errors in form.errors.items():
                 for error in errors:
@@ -371,9 +368,9 @@ def admin_panel():
 def delete_product(product_id):
     try:
         product = Product.query.get_or_404(product_id)
-        # Используем правильное имя placeholder, согласованное с остальным приложением
+        # Используем правильное имя placeholder!
         if product.image != "placeholder.jpg":
-            # Удаляем все три размера изображения (thumb, medium, full)
+            # Удаляем все три размера изображения.
             base_name = product.image.replace("_thumb.jpg", "")
             for suffix in ["thumb", "medium", "full"]:
                 try:
@@ -404,7 +401,7 @@ def edit_product(product_id):
     if form.validate_on_submit():
         old_image = product.image  # запоминаем старо
        
-        # Если загружено новое фото — обрабатываем, иначе оставляем старое
+        # если загружено новое фото — обработать, иначе оставляем старое
         if form.image.data:
             image_filename = process_product_image(form.image.data, delete_old_image=old_image)
             product.image = image_filename
@@ -431,7 +428,7 @@ def forbidden(error):
 
 import os
 
-# ===================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====================
+#   ===================== вспом. функции =================
 def get_image_path(base_image_name, size_suffix):
     """
     Возвращает путь к изображению нужного размера, проверяя его существование
@@ -439,21 +436,21 @@ def get_image_path(base_image_name, size_suffix):
     if not base_image_name or base_image_name == "placeholder.jpg":
         return base_image_name
 
-    # Получаем имя файла без суффикса
+    # Получить имя файла
     if base_image_name.endswith('_thumb.jpg'):
         base_name = base_image_name.replace('_thumb.jpg', '')
     else:
-        # Если это не thumb-файл, используем как есть
+        # если это не thumb-файл, то как есть
         base_name = base_image_name.replace('.jpg', '')
 
     # Формируем имя файла нужного размера
     target_filename = f"{base_name}_{size_suffix}.jpg"
 
-    # Проверяем, существует ли файл в папке загрузки
+    # Проверить, существует ли файл в папке загрузки
     upload_folder = app.config['UPLOAD_FOLDER']
     full_path = os.path.join(upload_folder, target_filename)
 
-    # Если файл существует, возвращаем его имя, иначе возвращаем оригинальное
+    # Если файл существует, то вернем его имя, иначе возвращаем оригинальное
     if os.path.exists(full_path):
         return target_filename
     else:
@@ -481,7 +478,7 @@ def cart():
     # Получаем все товары пользователя из корзины
     cart_items = CartItem.query.filter_by(user_id=current_user.id).all()
 
-    # Если корзина пуста, показываем пустую корзину
+    # если корзина пуста, показывать пустую корзину
     if not cart_items:
         return render_template("cart.html", cart_items=[], total=0)
 
@@ -535,7 +532,7 @@ def add_to_cart(product_id):
         size_text = f" (размер {size})" if size else ""
         flash(f"Товар «{product.title}»{size_text} добавлен в корзину!", "success")
 
-    # Остаёмся на той же странице (каталог, новинки и т.д.)
+    # Остаёмся на той же странице 
     return redirect(request.referrer or url_for('catalog'))
 
 @app.route("/cart/update/<int:cart_item_id>", methods=["POST"])
@@ -566,7 +563,7 @@ def update_cart_item(cart_item_id):
 def remove_from_cart(cart_item_id):
     cart_item = CartItem.query.get_or_404(cart_item_id)
 
-    # Проверяем, что товар принадлежит текущему пользователю
+    # Проверить что товар принадлежит текущему пользователю
     if cart_item.user_id != current_user.id:
         flash("У вас нет прав на удаление из этой корзины", "error")
         return redirect(url_for("cart"))
@@ -578,7 +575,7 @@ def remove_from_cart(cart_item_id):
     flash(f"Товар «{product_title}»{size_text} удален из корзины", "info")
     return redirect(url_for("cart"))
 
-# ===================== ПОИСК =====================
+# =====    поиск   =====================
 @app.route('/search')
 def search():
     q = request.args.get('q', '').strip()
@@ -588,23 +585,23 @@ def search():
     new = request.args.get('new')
     sale = request.args.get('sale')
 
-    # Новые параметры для атрибутного поиска
+    # Новые параметры для атр поиска
     brand = request.args.get('brand')
     color = request.args.get('color')
     size = request.args.get('size')
     tag = request.args.get('tag')
 
-    # Начинаем запрос: только товары в наличии
+    
     products_q = Product.query.filter(Product.in_stock == True)
 
-    # Поиск по тексту
+    # поиск по тексту
     if q:
         query_lower = q.lower()
         products_q = products_q.filter(
             Product.search_text.like(f"%{query_lower}%")
         )
 
-    # Фильтр по категории (через slug)
+    # фильтр по категории
     if category_slug:
         category = Category.query.filter_by(slug=category_slug).first()
         if category:
@@ -633,11 +630,11 @@ def search():
         products_q = products_q.filter(Product.color.ilike(f"%{color}%"))
 
     if size:
-        # Поиск размера в строке sizes (предполагаем, что размеры разделены запятыми)
+        # Поиск размера в строке sizes 
         products_q = products_q.filter(Product.sizes.ilike(f"%{size}%"))
 
     if tag:
-        # Поиск тега в строке tags (предполагаем, что теги разделены запятыми)
+        # Поиск тега в строке tags .
         products_q = products_q.filter(Product.tags.ilike(f"%{tag}%"))
 
     # Флаги: новинки и распродажа
@@ -646,7 +643,7 @@ def search():
     if sale:
         products_q = products_q.filter(Product.is_sale == True)
 
-    # Сортировка: сначала новые
+    
     products = products_q.order_by(Product.created_at.desc()).all()
 
     return render_template('search_results.html', products=products, q=q)
@@ -681,20 +678,20 @@ if __name__ == "__main__":
             print(f"Ошибка при добавлении столбца: {e}")
             db.session.rollback()
 
-        # Проверка наличия placeholder изображения — удобная подсказка при разработке
+        # Проверка наличия placeholder
         placeholder_path = os.path.join(basedir, 'static', 'images', 'placeholder.jpg')
         if not os.path.exists(placeholder_path):
             print("WARNING: placeholder image not found:", placeholder_path)
 
-        # Создаём админа один раз
+        # Создаём админа !!!  ---КСЯК исправить
         if not Admin.query.first():
             admin = Admin(username="admin")
-            admin.set_password("admin")  # потом сменишь пароль!
+            admin.set_password("admin")  # потом сменить пароль!
             db.session.add(admin)
             db.session.commit()
             print("Админ создан: admin / admin")
 
-        # Категории
+        # категории
         if Category.query.count() == 0:
             cats = [
                 Category(name="Женское", slug="women", icon="dress", order=1),

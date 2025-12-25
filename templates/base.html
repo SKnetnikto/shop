@@ -64,7 +64,7 @@
             </ul>
         </nav>
 
-        <!-- Переключатель тёмной темы -->
+        <!--     п  ереключатель темы -->
         <div class="theme-toggle">
             <input type="checkbox" id="theme-switch" class="theme-switch-input">
             <label for="theme-switch" class="theme-icon" title="Переключить тему" aria-label="Переключить тему">
@@ -72,7 +72,7 @@
             </label>
         </div>
 
-        <!-- Бургер для мобильных -->
+        <!-- Бургер -->
         <div class="burger">
             <span></span>
             <span></span>
@@ -163,7 +163,7 @@
 
 <script>
     function openProductModal(id, title, mediumImage, fullImage, price, oldPrice, description, brand, sizes, discount, isNew, isSale) {
-        // Обновляем информацию в модальном окне
+        // Обновить информацию в модальном окне
         document.getElementById('modalProductTitle').textContent = title;
 
         // Устанавливаем путь к full-изображению
@@ -172,10 +172,10 @@
 
         document.getElementById('modalProductDescription').textContent = description;
 
-        // Цена
+        // цена
         document.getElementById('modalCurrentPrice').textContent = price + ' ₽';
 
-        // Старая цена и скидка
+        // старая цена и скидка
         const oldPriceElement = document.getElementById('modalOldPrice');
         const discountElement = document.getElementById('modalDiscount');
 
@@ -316,7 +316,7 @@
                     burger.classList.remove('active');
                     nav.classList.remove('active');
 
-                    // Также закрываем выпадающие меню
+                    // закрываем выпадающие меню
                     const dropdown = document.querySelector('.nav__dropdown .dropdown');
                     if (dropdown) {
                         dropdown.classList.remove('active');
@@ -325,7 +325,7 @@
             });
         }
 
-        // Обработка выпадающего меню каталога на мобильных устройствах
+        // обработка выпадающего меню каталога на мобильных устройствах
         const catalogLink = document.querySelector('.nav__dropdown > a');
         if (catalogLink) {
             catalogLink.addEventListener('click', function(e) {
@@ -369,7 +369,7 @@
             addToCartButton.style.cursor = 'pointer';
         }
 
-        // Визуальное выделение выбранного размера
+        // визуальное выделение выбранного размера
         const sizeOptions = radioElement.closest('.size-selector').querySelectorAll('.size-option');
         sizeOptions.forEach(option => {
             option.style.borderColor = '#ddd';
@@ -380,14 +380,14 @@
         radioElement.closest('.size-option').style.backgroundColor = '#fff5f9';
     }
 
-    // Функция для обновления формы добавления в корзину в модальном окне
+    // функция для обновления формы добавления в корзину в модальном окне
     function updateModalAddToCartForm(radioElement) {
         const selectedSizeInput = document.getElementById('modalSelectedSize');
         if (selectedSizeInput) {
             selectedSizeInput.value = radioElement.value;
         }
 
-        // Активируем кнопку "Добавить в корзину" в модальном окне
+        // Активация кнопки "Добавить в корзину" в модальном окне
         const modalAddToCartButton = document.getElementById('modalAddToCartButton');
         if (modalAddToCartButton) {
             modalAddToCartButton.disabled = false;
@@ -407,7 +407,7 @@
             radioElement.closest('.modal-size-option').style.borderColor = '#ff2e63';
             radioElement.closest('.modal-size-option').style.backgroundColor = '#fff5f9';
         } else {
-            // Если элементы размеров не найдены через closest, ищем в контейнере
+            // если элементы размеров не найдены через closest, ищем в контейнере
             const allSizeOptions = document.querySelectorAll('#modalSizeOptions .modal-size-option');
             allSizeOptions.forEach(option => {
                 option.style.borderColor = '#ddd';

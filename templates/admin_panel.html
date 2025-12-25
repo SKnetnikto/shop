@@ -6,7 +6,7 @@
     <div class="container">
         <h1 class="admin-title">Панель управления</h1>
 
-        <!-- Флеш-сообщения -->
+        <!-- флеш-сообщения -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -16,7 +16,7 @@
         {% endwith %}
 
         <div class="admin-grid">
-            <!-- Форма добавления товара -->
+            <!-- форма добавления товара -->
             <div class="add-product-card">
                 <h2>Добавить новый товар</h2>
 
@@ -110,8 +110,7 @@
                         {% endif %}
                     </div>
 
-                    <!-- Загрузка фото с превью и подсказкой -->
-                    <!-- Загрузка фото — красиво и без дублей -->
+                    
 <div class="form-group">
     {{ form.image.label(class="form-label-big") }}
     
@@ -122,7 +121,7 @@
         {{ form.image(class="form-file-input", id="image") }}
     </div>
 
-    <!-- Одна единственная подсказка — красивая и понятная -->
+    <!--подсказка  -->
     <div class="photo-hint">
         <strong>Рекомендации по фото:</strong><br>
         • Формат: JPG, PNG, WebP (автоматически станет JPG)<br>
@@ -131,7 +130,7 @@
         • Фото будет выровнено по центру на белом фоне
     </div>
 
-    <!-- Превью -->
+    
     <div id="image-preview" class="image-preview" style="display: none;">
         <img id="preview-img" src="" alt="Превью">
         <p class="preview-text">Фото загружено — отлично!</p>
