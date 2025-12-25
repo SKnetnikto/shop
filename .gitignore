@@ -5,7 +5,7 @@ env/
 
 # База данных
 instance/
-!instance/shop.dp
+!instance/shop.db
 *.db
 
 # Кэши Python
