@@ -418,6 +418,31 @@
             radioElement.closest('.modal-size-option').style.backgroundColor = '#fff5f9';
         }
     }
+
+    // Подсветка активной страницы в меню
+    document.addEventListener('DOMContentLoaded', function() {
+        // Определяем текущий путь
+        const currentPath = window.location.pathname;
+        const navLinks = document.querySelectorAll('.nav__list a');
+
+        navLinks.forEach(link => {
+            // Проверяем, соответствует ли текущий путь href ссылки
+            const linkPath = link.getAttribute('href');
+            if (linkPath === currentPath) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+
+        // Специальная обработка для главной страницы
+        if (currentPath === '/') {
+            const homeLink = document.querySelector('a[href="/"]');
+            if (homeLink) {
+                homeLink.classList.add('active');
+            }
+        }
+    });
 </script>
 
 </body>

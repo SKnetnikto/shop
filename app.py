@@ -112,9 +112,11 @@ def admin_required(f):
 @login_manager.user_loader
 def load_user(user_id):
     # Пытаемся найти админа или обычного пользователя
+    # Сначала проверяем в таблице админов
     admin = Admin.query.get(int(user_id))
     if admin:
         return admin
+    # Если не найден в админах, ищем в обычных пользователях
     return User.query.get(int(user_id))
 
 db.init_app(app)
