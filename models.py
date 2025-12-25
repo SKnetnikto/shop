@@ -1,19 +1,19 @@
-# models.py
-# Здесь живут все модели базы данных для магазина "Шиповник"
-# Используем Flask-SQLAlchemy — удобно, красиво и надёжно
+
+# Здесь будут все модели базы данных для магазина "Шиповник"
+
 
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
-# Создаём объект БД. Подключим его в app.py чуть позже
+# создатьобъект БД. 
 db = SQLAlchemy()
 
 
 class Category(db.Model):
     """
-    Модель категории товаров (Женское, Мужское, Детское и т.д.)
+    Модель категории товаров (Женское, Мужское, Детское и и остальне.)
     """
     __tablename__ = 'category'                  
 
@@ -33,7 +33,7 @@ class Category(db.Model):
 
 class Admin(UserMixin, db.Model):
     """
-    Модель администратора — только один пользователь
+    Модель администратора — только один пользователь потом с user сделать
     """
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
@@ -52,12 +52,12 @@ class Admin(UserMixin, db.Model):
     
     
     def is_admin(self):
-        return True  # Админы имеют права администратора
+        return True  
 
 
 class User(UserMixin, db.Model):
     """
-    Модель обычного пользователя (покупателя)
+    Модель простогопользователя 
     """
     __tablename__ = 'user'
 
@@ -72,7 +72,7 @@ class User(UserMixin, db.Model):
     cart_items = db.relationship('CartItem', backref='user', lazy=True, cascade='all, delete-orphan')
 
     def set_password(self, password):
-        """Хешируем пароль при создании/смене"""
+        """Хешируем пароль при создании - смене"""
         self.password_hash = generate_password_hash(password, method='scrypt')
 
     def check_password(self, password):
@@ -84,7 +84,7 @@ class User(UserMixin, db.Model):
     
      
     def is_admin(self):
-        return False  # Обычные пользователи не админы
+        return False  # Обычные пользователи не админы!
 
 
 class CartItem(db.Model):
@@ -100,7 +100,7 @@ class CartItem(db.Model):
     quantity = db.Column(db.Integer, default=1, nullable=False)
     added_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # Связь с товаром
+    # связь с товаром
     product = db.relationship('Product', backref='cart_items', lazy=True)
 
     def __repr__(self):
@@ -116,25 +116,25 @@ class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)          # название товара
     price = db.Column(db.Float, nullable=False)                 # цена в рублях
-    old_price = db.Column(db.Float, nullable=True)              # старая цена (для скидок)
+    old_price = db.Column(db.Float, nullable=True)              # старая цена (убрать потом)
     description = db.Column(db.Text, nullable=True)             # описание
     image = db.Column(db.String(100), default="placeholder.jpg") # имя файла картинки
     in_stock = db.Column(db.Boolean, default=True)              # есть ли в наличии
     is_new = db.Column(db.Boolean, default=False)               # новинка?
     is_sale = db.Column(db.Boolean, default=False)              # на распродаже?
 
-    # Дополнительные поля для поиска и атрибутов (quick search)
+    # дополнительные поля для поиска и атрибутов 
     tags = db.Column(db.String(200), default="")              # ключевые слова через запятую
     brand = db.Column(db.String(80), nullable=True)
     color = db.Column(db.String(50), nullable=True)
     sku = db.Column(db.String(64), nullable=True)
-    sizes = db.Column(db.String(200), nullable=True)            # размеры одежды через запятую (42, 44, 46, 48, 50 и т.д.)
+    sizes = db.Column(db.String(200), nullable=True)            # размеры одежды через запятую (42, 44, 46, 48, 50 )
     search_text = db.Column(db.Text, nullable=True, index=True)  # объединённый текст для поиска
 
-    # Внешний ключ — связь с категорией
+    # внешний ключ — связь с категорией
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
 
-    # Дата добавления (для сортировки "новинки")
+    # Дата добавления  - для сортировки "новинки")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def update_search_text(self):
@@ -146,7 +146,7 @@ class Product(db.Model):
             self.color or '',
             self.sku or ''
         ]
-        # Убираем пустые строки, объединяем через пробел, приводим к нижнему регистру
+        # Убирать пустые строки и  объединяем через пробел, приводим к нижнему регистру
         self.search_text = ' '.join(part.strip() for part in parts if part).lower()
         
 
@@ -155,7 +155,7 @@ class Product(db.Model):
     def __repr__(self):
         return f"<Product {self.title}>"
 
-    # Удобное свойство: скидка в процентах
+    # 
     @property
     def discount_percent(self):
         if self.old_price and self.old_price > self.price:

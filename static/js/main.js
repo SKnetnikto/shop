@@ -1,6 +1,6 @@
-// static/js/main.js — бургер + тёмная тема + превью
+// бургер + тёмная тема + превью
 document.addEventListener("DOMContentLoaded", () => {
-    // === БУРГЕР-МЕНЮ ===
+    // === Бургер ===
     const burger = document.querySelector(".burger");
     const nav = document.querySelector(".nav");
 
@@ -11,11 +11,11 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // === ТЁМНАЯ ТЕМА ===
+    // === темная тема ===
     const themeSwitch = document.getElementById("theme-switch");
     const body = document.body;
 
-    // Загружаем сохранённую тему
+    // загрузка темной темы 
     if (localStorage.getItem("theme") === "dark") {
         body.classList.add("dark-mode");
         themeSwitch.checked = true;

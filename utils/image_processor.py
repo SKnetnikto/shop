@@ -1,6 +1,4 @@
-# utils/image_processor.py
-# Логика обработки загруженных изображений товара
-# Возвращает имя thumb-файла (например: abc123_thumb.jpg)
+# работа с фотографиями - чтоб добавлять правильно)
 
 import os
 import uuid
@@ -16,7 +14,7 @@ def process_product_image(uploaded_file, delete_old_image=None):
     if not uploaded_file or uploaded_file.filename == '':
         return "placeholder.jpg"
 
-    # Удаляем старые файлы, если передан delete_old_image (при редактировании)
+    # удалить старые файлы, если передан delete_old_image 
     if delete_old_image and delete_old_image != "placeholder.jpg":
         _delete_old_images(delete_old_image)
 
@@ -25,13 +23,13 @@ def process_product_image(uploaded_file, delete_old_image=None):
     base_name = f"{unique_id}"
     upload_folder = current_app.config['UPLOAD_FOLDER']
 
-    # Открываем изображение
+    # Открыть
     try:
         img = Image.open(uploaded_file)
     except Exception as e:
         raise ValueError("Неподдерживаемый формат изображения")
 
-    # Конвертируем в RGB (важно для JPG)
+    # Конвертируем в RGB 
     if img.mode in ("RGBA", "LA", "P"):
         img = img.convert("RGB")
 
@@ -47,7 +45,7 @@ def process_product_image(uploaded_file, delete_old_image=None):
         img_copy = img.copy()
         img_copy.thumbnail(size, Image.Resampling.LANCZOS)  # лучший алгоритм
 
-        # Создаём белый фон нужного размера
+        # создаём белый фон 
         background = Image.new('RGB', size, (255, 255, 255))
         offset = ((size[0] - img_copy.width) // 2, (size[1] - img_copy.height) // 2)
         background.paste(img_copy, offset)
@@ -57,11 +55,11 @@ def process_product_image(uploaded_file, delete_old_image=None):
         background.save(save_path, "JPEG", quality=92, optimize=True)
         saved_files.append(filename)
 
-    return f"{base_name}_thumb.jpg"  # возвращаем только thumb для БД
+    return f"{base_name}_thumb.jpg"  # возвращает только thumb для БД
 
 
 def _delete_old_images(old_thumb_name):
-    """Удаляет все три размера старого изображения"""
+    """Удаляем все три размера старого изображения"""
     if not old_thumb_name or old_thumb_name == "placeholder.jpg":
         return
 
